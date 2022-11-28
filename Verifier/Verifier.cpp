@@ -5,20 +5,15 @@
 #include <pthread.h>
 #include <iostream>
 #include <queue>
-#include <vector>
 #include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <time.h>
 #include <sys/timeb.h>
 #include <fstream>
-#include <filesystem>
 #include <error.h>
-#include <ofstream>
-#include <ifstream>
 
 #include "command_define_list.h"
 #include "verifier_cfg.h"
@@ -26,7 +21,6 @@
 #include "verify.cpp"
 #include "../Merkle_Tree/merkle_tree.cpp"
 #include "../Merkle_Tree/node.cpp"
-#include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 
 using namespace std;
@@ -56,12 +50,12 @@ int get_data_from_DB(string &CID)
     while ((row = mysql_fetch_row(res)) != NULL)
     {
         hash_DB = row[0];
-        s_signed_hash_DB = row[1];
+        string s_signed_hash_DB = row[1];
 
         char *c_signed_hash_DB = new char[Signed_Hash_size];
-         strcpy(c_signed_hash_DB, s_signed_hash_DB.c_str());
+        strcpy(c_signed_hash_DB, s_signed_hash_DB.c_str());
 
-        bool authentic = verifySignature(publicKey, s_hash_DB, c_signed_hash_DB);
+        bool authentic = verifySignature(publicKey, hash_DB, c_signed_hash_DB);
         if (authentic)
         {
             cout << CID << "'s signed hash is verified." << endl;
@@ -129,14 +123,15 @@ void edge_detection(cv::Mat &Y)
 
 void make_hash(cv::Mat &FV)
 {
+    string mat_data= "";
     for (int i = 0; i < FV.rows; i++) {
         for (int j = 0; j < FV.cols; j++) {
             mat_data += to_string(FV.at<uchar>(i, j));
         }
     }
 
-    sha_result = hash_sha256(mat_data);
-    hash_verifier = sha_result;
+    string sha_result = hash_sha256(mat_data);
+    hash_VF = sha_result;
     cout << "hash made by VF" << endl;
     FV.release();
 }
@@ -159,8 +154,8 @@ void compare_hash(string &HASH_VERIFIER, string &HASH_DB) {
 void update_result(string &CID, int VERIFIED){
 
     // Table name change needed
-    string table_name = 
-    string sorder = "update " + table_name + " SET verified = " + VERIFIED + " where CID = " CID ";";
+    string table_name = "";
+    string sorder = "update " + table_name + " SET verified = " + to_string(VERIFIED) + " where CID = " + CID + ";";
 
     char *order = new char[sorder.length() + 1];
     
