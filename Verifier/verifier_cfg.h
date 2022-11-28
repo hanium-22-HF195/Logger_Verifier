@@ -30,7 +30,6 @@
 #define HD_HEIGHT 720
 //----------------------------------
 // Deafault values PATH for Verifier
-#define pubKey_path "/home/pi/hanium_2022/Server/PUBKEY.txt"
 #define video_data_path "/home/pi/images/"
 //----------------------------------
 #define ThisID Verifier

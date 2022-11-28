@@ -194,7 +194,7 @@ void capture()
 
     while (true)
     {
-        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3, Scalar(0));
+        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
 
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
@@ -298,8 +298,8 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE)
         }
 
         cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame(cv::Size((height * 3 / 2), width), CV_8UC1, Scalar(0));
-        cv::Mat y_frame(cv::Size(height, width), CV_8UC1, Scalar(0));
+        cv::Mat yuv_frame(cv::Size((height * 3 / 2), width), CV_8UC1);
+        cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
         BGR_queue.pop();
 
         // CONVERT BGR To YUV420 and YUV420 to Y
@@ -377,9 +377,6 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
         string mat_data = "";
         string sha_result = "";
 
-        // unsigned char *umat_data = new unsigned char[umat_data_bufsize];
-        // memcpy(umat_data, temp.data, umat_data_bufsize);
-
         for (int i = 0; i < temp.rows; i++)
         {
             for (int j = 0; j < temp.cols; j++)
@@ -419,39 +416,6 @@ void sign_hash(queue<string> &HASH_QUEUE)
     cout << "    Signed Hash made: " << hash_signed_queue.size() << endl;
 }
 
-// string getCID()
-// {
-//     struct timeb tb; // <sys/timeb.h>
-//     struct tm tstruct;
-//     std::ostringstream oss;
-
-//     string s_CID;
-//     char buf[128];
-
-//     ftime(&tb);
-//     // For Thread safe, use localtime_r
-//     if (nullptr != localtime_r(&tb.time, &tstruct))
-//     {
-//         strftime(buf, sizeof(buf), "%Y-%m-%d_%T.", &tstruct);
-//         oss << buf;        // YEAR-MM-DD HH-mm_SS
-//         oss << tb.millitm; // millisecond
-//     }
-
-//     s_CID = oss.str();
-
-//     s_CID = s_CID.substr(0, 23);
-//     if (s_CID.length() == 22)
-//     {
-//         s_CID = s_CID.append("0");
-//     }
-//     if (s_CID.length() == 21)
-//     {
-//         s_CID = s_CID.append("00");
-//     }
-
-//     return s_CID;
-// }
-
 void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
 {
     cout << "----SEND BGR, Y frame and hash to WEB----" << endl;
@@ -460,13 +424,24 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
 
     ORI.front().copyTo(ori);
     Y.front().copyTo(y);
+    
+    if( Image_Hash_request() == 1) {
+        cv::imwrite(orifile_path, ori);
+        cv::imwrite(yfile_path, y);
+        string hash = hash_queue.front();
 
-    cv::imwrite(orifile_path, ori);
-    cv::imwrite(yfile_path, y);
-    string hash = hash_queue.front();
+        fstream hash_file(hashfile_path, ios::trunc | ios::out);
+        if(hash_file.is_open()){
+            hash_file << hash << endl;
+        }   
 
-    Image_Hash_request(hash);
-
+        hash_file.close();
+        Image_Hash_response();
+    }
+    else {
+        cout << "    No request from Web UI." << endl;
+    }
+    
     ori.release();
     y.release();
 }
