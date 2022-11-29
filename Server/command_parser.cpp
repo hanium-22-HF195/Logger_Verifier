@@ -38,14 +38,14 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	int ack, i=0, len;
 	len = sizeof(parser_desp) / sizeof(parser_desp[0]);
 
-	// cout << "---------------------------------" << endl;
-	// cout << "port : " << port.s << endl;
-	// cout << hex << (int)pmsg->startID << endl;
-	// cout << (int)pmsg->destID << endl;
-	// cout << (int)pmsg->command << endl;
-	// cout << (int)pmsg->dataType << endl;
-	// cout << dec << (int)pmsg->dataSize << endl;
-	// cout << "---------------------------------" << endl;
+	cout << "---------------------------------" << endl;
+	cout << "port : " << port.s << endl;
+	cout << "Start ID : "<< hex << (int)pmsg->startID << endl;
+	cout << "Destination ID : " << (int)pmsg->destID << endl;
+	cout << "Command : " << (int)pmsg->command << endl;
+	cout << "Data Type : " << (int)pmsg->dataType << endl;
+	cout << "Data Size : "<< dec << (int)pmsg->dataSize << endl;
+	cout << "---------------------------------" << endl;
 
 	if(pmsg->destID != ThisID){
 		cout << port.s << " port has problem, Wrong destination!! " << endl;

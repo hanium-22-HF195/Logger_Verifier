@@ -53,7 +53,7 @@ public:
 	void initDatabase(struct db_user *db_info);
 	void update_database(char* order);
 	string verified_table();
-
+	void print_query();
 };
 
 bout_database::bout_database(){
@@ -67,6 +67,7 @@ bout_database::bout_database(){
 	conn = mysql_connection_setup(mysqlID);
 
 	cout << "Initialized Database" << endl; 
+	//print_query();
 }
 
 bout_database::~bout_database(){
@@ -207,4 +208,18 @@ string bout_database::verified_table(){
 			return verified_table;
 	}
 	
+}
+
+void bout_database::print_query(){
+	string sorder = "select * from " + table_name + ";";
+	char *order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	res = mysql_perform_query(conn, order);
+
+	while((row = mysql_fetch_row(res)) != NULL){
+		cout <<  "CID : " << row[0] << endl;
+		cout <<  "Hash : " << row[1] << endl;
+		cout <<  "Signed Hash : " << row[2] << endl;
+
+	}
 }
