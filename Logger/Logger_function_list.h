@@ -5,6 +5,7 @@ int send_pubKey_to_server();                                                    
 int init();                                                                                                                               // Init Camera Setting and OPEN CAP
 void init_all_settings();                                                                                                                 // Init all settings at the end
 void init_queue();                                                                                                                        // Init all datas in queues
+void lamping_time();                                                                                                                      // lamping time
 void *UpdateFrame(void *arg);                                                                                                             // Update Frames
 void capture();                                                                                                                           // Capture frames;
 void convert_frames(queue<cv::Mat> &BGR_QUEUE);                                                                                           // Convert saved frames;
