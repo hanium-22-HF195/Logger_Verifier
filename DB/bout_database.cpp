@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +41,7 @@ public:
 
 	bout_database();
 	~bout_database();
+	void select_database(char* order, string &HASH, string &SIGNED_HASH);
 	void insert_database(char* CID, char* Hash, char* Signed_Hash);
 	void insert_pk_database(string key_ID, char* key_value);
 	string get_latest_key_ID(char* order);
@@ -103,7 +103,7 @@ MYSQL* bout_database::mysql_connection_setup(struct db_user sql_user){
   MYSQL *connection = mysql_init(NULL);
 
   if(!mysql_real_connect(connection, sql_user.server, sql_user.user, sql_user.password, sql_user.database, 0, NULL, 0)) {
-    printf("Connection error : %s\n", mysql_error(connection));
+    printf("Connection error : %s\n", mysql_error(connection)); 
     exit(1);
   }
 
@@ -118,6 +118,15 @@ MYSQL_RES* bout_database::mysql_perform_query(MYSQL *connection, char *sql_query
 		create_table();
 	}
   return mysql_use_result(connection);
+}
+
+void bout_database::select_database(char* order, string &HASH, string &SIGNED_HASH) {
+	res = mysql_perform_query(conn, order);
+	cout << "---------------------------------------------------" << endl;
+	while((row = mysql_fetch_row(res)) != NULL){
+		HASH = row[0];
+		SIGNED_HASH = row[1];
+	}
 }
 
 void bout_database::insert_database(char* CID, char* Hash, char* Signed_Hash){

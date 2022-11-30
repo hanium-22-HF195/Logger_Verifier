@@ -79,6 +79,7 @@ int send_pubKey_to_server()
         cout << "PubKey send Error!!" << endl;
     }
     cout << "----SENDING PUBKEY to SERVER END----" << endl;
+    delete [] pubKey_buffer;
 }
 
 void open_camera() {
@@ -194,7 +195,7 @@ void capture()
 
     while (true)
     {
-        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3, Scalar(0));
+        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
 
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
@@ -298,8 +299,8 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE)
         }
 
         cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame(cv::Size((height * 3 / 2), width), CV_8UC1, Scalar(0));
-        cv::Mat y_frame(cv::Size(height, width), CV_8UC1, Scalar(0));
+        cv::Mat yuv_frame(cv::Size((height * 3 / 2), width), CV_8UC1);
+        cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
         BGR_queue.pop();
 
         // CONVERT BGR To YUV420 and YUV420 to Y
@@ -377,9 +378,6 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
         string mat_data = "";
         string sha_result = "";
 
-        // unsigned char *umat_data = new unsigned char[umat_data_bufsize];
-        // memcpy(umat_data, temp.data, umat_data_bufsize);
-
         for (int i = 0; i < temp.rows; i++)
         {
             for (int j = 0; j < temp.cols; j++)
@@ -402,6 +400,8 @@ void sign_hash(queue<string> &HASH_QUEUE)
     cout << "----Signing Hash by private Key" << endl
          << endl;
 
+    char *ch = new char[SIGNED_HASH_BUFSIZE];
+
     while (true)
     {
         if (sign.size() == 0)
@@ -410,47 +410,16 @@ void sign_hash(queue<string> &HASH_QUEUE)
         }
         string signed_hash = signMessage(privateKey, sign.front());
 
-        char *ch = new char[350];
+        memset(ch, 0, sizeof(char)*SIGNED_HASH_BUFSIZE);
         strcpy(ch, signed_hash.c_str());
 
         hash_signed_queue.push(signed_hash);
         sign.pop();
+        
     }
+    delete [] ch;
     cout << "    Signed Hash made: " << hash_signed_queue.size() << endl;
 }
-
-// string getCID()
-// {
-//     struct timeb tb; // <sys/timeb.h>
-//     struct tm tstruct;
-//     std::ostringstream oss;
-
-//     string s_CID;
-//     char buf[128];
-
-//     ftime(&tb);
-//     // For Thread safe, use localtime_r
-//     if (nullptr != localtime_r(&tb.time, &tstruct))
-//     {
-//         strftime(buf, sizeof(buf), "%Y-%m-%d_%T.", &tstruct);
-//         oss << buf;        // YEAR-MM-DD HH-mm_SS
-//         oss << tb.millitm; // millisecond
-//     }
-
-//     s_CID = oss.str();
-
-//     s_CID = s_CID.substr(0, 23);
-//     if (s_CID.length() == 22)
-//     {
-//         s_CID = s_CID.append("0");
-//     }
-//     if (s_CID.length() == 21)
-//     {
-//         s_CID = s_CID.append("00");
-//     }
-
-//     return s_CID;
-// }
 
 void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
 {
@@ -460,13 +429,24 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
 
     ORI.front().copyTo(ori);
     Y.front().copyTo(y);
+    
+    if( Image_Hash_request() == 1) {
+        cv::imwrite(orifile_path, ori);
+        cv::imwrite(yfile_path, y);
+        string hash = hash_queue.front();
 
-    cv::imwrite(orifile_path, ori);
-    cv::imwrite(yfile_path, y);
-    string hash = hash_queue.front();
+        fstream hash_file(hashfile_path, ios::trunc | ios::out);
+        if(hash_file.is_open()){
+            hash_file << hash << endl;
+        }   
 
-    Image_Hash_request(hash);
-
+        hash_file.close();
+        Image_Hash_response();
+    }
+    else {
+        cout << "    No request from Web UI." << endl;
+    }
+    
     ori.release();
     y.release();
 }
@@ -506,6 +486,12 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
          << "---------------------- " << endl;
 
     int step = 0;
+
+    char *cid_buffer = new char[cid_bufsize];
+    char *hash_buffer = new char[hash_bufsize];
+    char *signed_hash_buffer = new char[signed_hash_bufsize];
+    unsigned char *video_buffer = new unsigned char[video_bufsize];
+
     while (true)
     {
         if (cid_send.size() == 0 && hash_send.size() == 0 && signed_hash_send.size() == 0 && yuv_send.size() == 0)
@@ -514,10 +500,10 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         }
         cout << "step : " << ++step << endl;
 
-        char *cid_buffer = new char[cid_bufsize];
-        char *hash_buffer = new char[hash_bufsize];
-        char *signed_hash_buffer = new char[signed_hash_bufsize];
-        unsigned char *video_buffer = new unsigned char[video_bufsize];
+        memset(cid_buffer, 0, sizeof(char)*cid_bufsize);
+        memset(hash_buffer, 0, sizeof(char)*hash_bufsize);
+        memset(signed_hash_buffer, 0, sizeof(char)*signed_hash_bufsize);
+        memset(video_buffer, 0, sizeof(unsigned char)*video_bufsize);
 
         strcpy(cid_buffer, cid_send.front().c_str());
         strcpy(hash_buffer, hash_send.front().c_str());
@@ -576,9 +562,12 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         hash_send.pop();
         signed_hash_send.pop();
         cid_send.pop();
-        sleep(0.2);
-    }
 
+    }
+    delete [] cid_buffer;
+    delete [] hash_buffer;
+    delete [] signed_hash_buffer;
+    delete [] video_buffer;
     cout << "----SEND END----------------" << endl;
 }
 
