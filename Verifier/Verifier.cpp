@@ -14,6 +14,7 @@
 #include <sys/timeb.h>
 #include <fstream>
 #include <error.h>
+#include <ctime>
 
 #include "command_define_list.h"
 #include "verifier_cfg.h"
@@ -25,30 +26,66 @@
 
 using namespace std;
 
+string CID = "";
+string table_name = "";
 cv::Mat yuv420;
 cv::Mat y;
 cv::Mat feature_vector;
 string hash_DB;
 string hash_VF;
-string cid;
 int verified = 0;
 bout_database bDB;
 
-int get_data_from_DB(string &CID)
+int read_pubKey() {
+    ifstream pubKeyfile(pubKey_path);
+    if(pubKeyfile.is_open()){
+        pubKeyfile.seekg(0, ios::end);
+        int size = pubKeyfile.tellg();
+        publicKey.resize(size);
+        pubKeyfile.seekg(0, ios::beg);
+        pubKeyfile.read(&publicKey[0], size);
+    } else {
+
+        cout << "can't find file." << endl;
+        return 0;
+    }
+
+    publicKey.erase(prev(publicKey.end()));
+    cout << publicKey << endl;;
+    pubKeyfile.close();
+    cout << endl;
+    return 1;
+}
+
+int get_data_from_DB()
 {
+
+    time_t timer;
+    struct tm* t;
+    timer = time(NULL); // 1970년 1월 1일 0시 0분 0초부터 시작하여 현재까지의 초
+    t = localtime(&timer); // 포맷팅을 위해 구조체에 넣기
+
+    int year = t->tm_year + 1900;
+    int month = t->tm_mon + 1;
+    int day = t->tm_mday;
+
+    table_name = to_string(year) + "_" + to_string(month) + to_string(day);
+
     // Table name change needed
-    string table_name = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2);
-    string sorder = "select Hash, Signed_Hash from " + table_name + " where CID = \"" + CID + "\";";
+    string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where verified = 0 order by CID ASC limit 1;";
+    cout << sorder << endl;
 
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
     string s_signed_hash_DB = "";
-    bDB.select_database(order, hash_DB, s_signed_hash_DB);
+    bDB.select_database(order, CID, hash_DB, s_signed_hash_DB);
     delete [] order;
+
 
     char *c_signed_hash_DB = new char[s_signed_hash_DB.size()];
     strcpy(c_signed_hash_DB, s_signed_hash_DB.c_str());
-    /*
+
+    cout << s_signed_hash_DB << endl;
     bool authentic = verifySignature(publicKey, hash_DB, c_signed_hash_DB);
     if (authentic) {
         cout << CID << "'s signed hash is verified." << endl;
@@ -57,7 +94,7 @@ int get_data_from_DB(string &CID)
     else {
         cout << "Not Authentic." << endl;
     }
-    */
+
     delete [] c_signed_hash_DB;
     return 0;
 }
@@ -151,37 +188,43 @@ void compare_hash(string &HASH_VERIFIER) {
 void update_result(string &CID, int VERIFIED){
 
     // Table name change needed
-    string table_name = "";
-    string sorder = "update " + table_name + " SET verified = " + to_string(VERIFIED) + " where CID = " + CID + ";";
+    string sorder = "update " + table_name + " SET verified = " + to_string(VERIFIED) + " where CID = '" + CID + "';";
+    cout << sorder << endl;
     char *order = new char[sorder.length() + 1];
     
     //UPDATE NEDDED
     bDB.update_database(order);
     delete [] order;
 
+
 }
 
 void init_Verifier() {
     string hash_DB = "";
     string hash_VF = "";
-    string cid = "";
+    string CID = "";
+    string table_name = "";
     int verified = 0;
 }
 
 int main()
 {
 
-    // Server to Verifier ( CID, PUBKEY)
-    cid = "2022-11-30_01:15:31.146";    //temp
-    //
-    get_data_from_DB(cid);
-    read_video_data(cid);
-    convert_frames(yuv420);
-    edge_detection(y); 
-    make_hash(feature_vector);
-    compare_hash(hash_VF);
-    update_result(cid, verified);
-    init_Verifier();
+    if(!read_pubKey()) {exit(1);};
+    
+    while(true) {
+        get_data_from_DB();
+        read_video_data(CID);
+        convert_frames(yuv420);
+        edge_detection(y); 
+        make_hash(feature_vector);
+        compare_hash(hash_VF);
+        update_result(CID, verified);
+        init_Verifier();
+        bDB.~bout_database();
+
+    }
+
 
     return 0;
 }

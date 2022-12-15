@@ -54,6 +54,16 @@ int key_generation()
     cout << "PRIKEY and PUBKEY are made" << endl;
     cout << "public Key = " << endl
          << publicKey;
+
+    cout << "SAVE PUBLIC KEY FOR VERIFIER" << endl;
+
+    fstream pubkey_file(pubkeyfile_path , ios::trunc | ios::out);
+        if(pubkey_file.is_open()){
+            pubkey_file << publicKey;
+        }   
+
+        pubkey_file.close();
+    return 0;
 }
 
 int send_pubKey_to_server()
@@ -401,7 +411,7 @@ void sign_hash(queue<string> &HASH_QUEUE)
          << endl;
 
     char *ch = new char[SIGNED_HASH_BUFSIZE];
-
+ 
     while (true)
     {
         if (sign.size() == 0)
@@ -427,8 +437,8 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
     cv::Mat ori(Size(width, height), CV_8UC3);
     cv::Mat y(Size(width, height), CV_8UC3);
 
-    ORI.front().copyTo(ori);
-    Y.front().copyTo(y);
+    ori = ORI.front().clone();
+    y = Y.front().clone();
     
     if( Image_Hash_request() == 1) {
         cv::imwrite(orifile_path, ori);

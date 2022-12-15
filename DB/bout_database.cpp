@@ -41,7 +41,7 @@ public:
 
 	bout_database();
 	~bout_database();
-	void select_database(char* order, string &HASH, string &SIGNED_HASH);
+	void select_database(char* order, string &CID, string &HASH, string &SIGNED_HASH);
 	void insert_database(char* CID, char* Hash, char* Signed_Hash);
 	void insert_pk_database(string key_ID, char* key_value);
 	string get_latest_key_ID(char* order);
@@ -120,12 +120,13 @@ MYSQL_RES* bout_database::mysql_perform_query(MYSQL *connection, char *sql_query
   return mysql_use_result(connection);
 }
 
-void bout_database::select_database(char* order, string &HASH, string &SIGNED_HASH) {
+void bout_database::select_database(char* order, string &CID, string &HASH, string &SIGNED_HASH) {
 	res = mysql_perform_query(conn, order);
 	cout << "---------------------------------------------------" << endl;
 	while((row = mysql_fetch_row(res)) != NULL){
-		HASH = row[0];
-		SIGNED_HASH = row[1];
+		CID = row[0];
+		HASH = row[1];
+		SIGNED_HASH = row[2];
 	}
 }
 
@@ -152,12 +153,9 @@ void bout_database::create_table(){
 }
 
 void bout_database::update_database(char* order){
+	mysql_query(conn, order);
 	res = mysql_perform_query(conn, order);
 	cout << endl << "---------------------------------------------------" << endl;
-	while((row = mysql_fetch_row(res)) != NULL){
-		string x = row[0];
-		cout << x << endl;
-	}
 }
 
 string bout_database::get_latest_key_ID(char* order){
