@@ -15,6 +15,7 @@
 #include <fstream>
 #include <error.h>
 #include <ctime>
+#include <unistd.h>
 
 #include "command_define_list.h"
 #include "verifier_cfg.h"
@@ -33,6 +34,7 @@ cv::Mat y;
 cv::Mat feature_vector;
 string hash_DB;
 string hash_VF;
+int sign_verified = 0;
 int verified = 0;
 bout_database bDB;
 
@@ -59,18 +61,7 @@ int read_pubKey() {
 
 int get_data_from_DB()
 {
-
-    time_t timer;
-    struct tm* t;
-    timer = time(NULL); // 1970년 1월 1일 0시 0분 0초부터 시작하여 현재까지의 초
-    t = localtime(&timer); // 포맷팅을 위해 구조체에 넣기
-
-    int year = t->tm_year + 1900;
-    int month = t->tm_mon + 1;
-    int day = t->tm_mday;
-
-    table_name = to_string(year) + "_" + to_string(month) + to_string(day);
-
+    table_name = DB_table_name;
     // Table name change needed
     string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where verified = 0 order by CID ASC limit 1;";
     cout << sorder << endl;
@@ -85,25 +76,25 @@ int get_data_from_DB()
     char *c_signed_hash_DB = new char[s_signed_hash_DB.size()];
     strcpy(c_signed_hash_DB, s_signed_hash_DB.c_str());
 
-    cout << s_signed_hash_DB << endl;
     bool authentic = verifySignature(publicKey, hash_DB, c_signed_hash_DB);
     if (authentic) {
         cout << CID << "'s signed hash is verified." << endl;
-
+        sign_verified = 1;
     }
     else {
         cout << "Not Authentic." << endl;
+        sign_verified = 0;
     }
 
     delete [] c_signed_hash_DB;
-    return 0;
+    return sign_verified;
 }
 
 void read_video_data(string &CID)
 {
+    string forder_name = FORDER_NAME;
     cout << "Read frames from storage." << endl;
-    string file_dir_name = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2) + "/";
-    string file_dir = storage_dir + file_dir_name + CID;
+    string file_dir = storage_dir + forder_name + CID;
     cout << file_dir << endl;
 
     ifstream frame_file(file_dir, ifstream::binary);
@@ -186,45 +177,44 @@ void compare_hash(string &HASH_VERIFIER) {
 }
 
 void update_result(string &CID, int VERIFIED){
-
     // Table name change needed
-    string sorder = "update " + table_name + " SET verified = " + to_string(VERIFIED) + " where CID = '" + CID + "';";
+    string sorder = "UPDATE " + table_name + " SET verified = " + to_string(VERIFIED) + " where CID = '" + CID + "';";
     cout << sorder << endl;
     char *order = new char[sorder.length() + 1];
+    strcpy(order, sorder.c_str());
     
-    //UPDATE NEDDED
     bDB.update_database(order);
     delete [] order;
-
-
 }
 
 void init_Verifier() {
-    string hash_DB = "";
-    string hash_VF = "";
-    string CID = "";
-    string table_name = "";
-    int verified = 0;
+    hash_DB = "";
+    hash_VF = "";
+    CID = "";
+    table_name = "";
+    verified = 0;
 }
 
 int main()
 {
-
     if(!read_pubKey()) {exit(1);};
-    
+
     while(true) {
-        get_data_from_DB();
-        read_video_data(CID);
-        convert_frames(yuv420);
-        edge_detection(y); 
-        make_hash(feature_vector);
-        compare_hash(hash_VF);
-        update_result(CID, verified);
-        init_Verifier();
-        bDB.~bout_database();
-
+        if(get_data_from_DB) {
+            get_data_from_DB();
+            read_video_data(CID);
+            convert_frames(yuv420);
+            edge_detection(y); 
+            make_hash(feature_vector);
+            compare_hash(hash_VF);
+            update_result(CID, verified);
+            init_Verifier();
+            cout << "VERIIER played. " << endl;
+            
+        }
+        else { cout << "signiture not verified." << endl;} 
+        sleep(1); 
     }
-
 
     return 0;
 }

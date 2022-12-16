@@ -74,21 +74,9 @@ bout_database::~bout_database(){
 	mysql_close(conn);
 }
 
-void bout_database::get_table_name(){
-	struct timeb tb;   // <sys/timeb.h>                       
-    struct tm tstruct;                      
-    std::ostringstream oss;   
-                           
-    char buf[128];                                            
-                                                              
-    ftime(&tb);
-    // For Thread safe, use localtime_r
-    if (nullptr != localtime_r(&tb.time, &tstruct)) {         
-        strftime(buf, sizeof(buf), "%Y_%m%d", &tstruct);
-        oss << buf; // YEAR_MMDD
-    }              
+void bout_database::get_table_name(){     
 
-    table_name = oss.str();
+    table_name = DB_table_name;
 }
 
 void bout_database::initDatabase(struct db_user *db_info){
@@ -153,9 +141,12 @@ void bout_database::create_table(){
 }
 
 void bout_database::update_database(char* order){
-	mysql_query(conn, order);
 	res = mysql_perform_query(conn, order);
 	cout << endl << "---------------------------------------------------" << endl;
+	while((row = mysql_fetch_row(res)) != NULL){
+		string x = row[0];
+		cout << x << endl;
+	}
 }
 
 string bout_database::get_latest_key_ID(char* order){
