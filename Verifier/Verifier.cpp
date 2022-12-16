@@ -15,7 +15,6 @@
 #include <fstream>
 #include <error.h>
 #include <ctime>
-#include <unistd.h>
 
 #include "command_define_list.h"
 #include "verifier_cfg.h"
