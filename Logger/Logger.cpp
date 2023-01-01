@@ -54,6 +54,16 @@ int key_generation()
     cout << "PRIKEY and PUBKEY are made" << endl;
     cout << "public Key = " << endl
          << publicKey;
+
+    cout << "SAVE PUBLIC KEY FOR VERIFIER" << endl;
+
+    fstream pubkey_file(pubkeyfile_path , ios::trunc | ios::out);
+        if(pubkey_file.is_open()){
+            pubkey_file << publicKey;
+        }   
+
+        pubkey_file.close();
+    return 0;
 }
 
 int send_pubKey_to_server()
@@ -79,6 +89,7 @@ int send_pubKey_to_server()
         cout << "PubKey send Error!!" << endl;
     }
     cout << "----SENDING PUBKEY to SERVER END----" << endl;
+    delete [] pubKey_buffer;
 }
 
 void open_camera() {
@@ -399,6 +410,8 @@ void sign_hash(queue<string> &HASH_QUEUE)
     cout << "----Signing Hash by private Key" << endl
          << endl;
 
+    char *ch = new char[SIGNED_HASH_BUFSIZE];
+ 
     while (true)
     {
         if (sign.size() == 0)
@@ -407,12 +420,14 @@ void sign_hash(queue<string> &HASH_QUEUE)
         }
         string signed_hash = signMessage(privateKey, sign.front());
 
-        char *ch = new char[350];
+        memset(ch, 0, sizeof(char)*SIGNED_HASH_BUFSIZE);
         strcpy(ch, signed_hash.c_str());
 
         hash_signed_queue.push(signed_hash);
         sign.pop();
+        
     }
+    delete [] ch;
     cout << "    Signed Hash made: " << hash_signed_queue.size() << endl;
 }
 
@@ -481,6 +496,12 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
          << "---------------------- " << endl;
 
     int step = 0;
+
+    char *cid_buffer = new char[cid_bufsize];
+    char *hash_buffer = new char[hash_bufsize];
+    char *signed_hash_buffer = new char[signed_hash_bufsize];
+    unsigned char *video_buffer = new unsigned char[video_bufsize];
+
     while (true)
     {
         if (cid_send.size() == 0 && hash_send.size() == 0 && signed_hash_send.size() == 0 && yuv_send.size() == 0)
@@ -489,10 +510,10 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         }
         cout << "step : " << ++step << endl;
 
-        char *cid_buffer = new char[cid_bufsize];
-        char *hash_buffer = new char[hash_bufsize];
-        char *signed_hash_buffer = new char[signed_hash_bufsize];
-        unsigned char *video_buffer = new unsigned char[video_bufsize];
+        memset(cid_buffer, 0, sizeof(char)*cid_bufsize);
+        memset(hash_buffer, 0, sizeof(char)*hash_bufsize);
+        memset(signed_hash_buffer, 0, sizeof(char)*signed_hash_bufsize);
+        memset(video_buffer, 0, sizeof(unsigned char)*video_bufsize);
 
         strcpy(cid_buffer, cid_send.front().c_str());
         strcpy(hash_buffer, hash_send.front().c_str());
@@ -551,9 +572,12 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         hash_send.pop();
         signed_hash_send.pop();
         cid_send.pop();
-        sleep(0.2);
-    }
 
+    }
+    delete [] cid_buffer;
+    delete [] hash_buffer;
+    delete [] signed_hash_buffer;
+    delete [] video_buffer;
     cout << "----SEND END----------------" << endl;
 }
 

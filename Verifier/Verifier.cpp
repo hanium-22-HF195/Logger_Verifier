@@ -111,6 +111,7 @@ void convert_frames(cv::Mat &YUV420)
 
 void edge_detection(cv::Mat &Y)
 {
+    cout << "----Start to convert Frames into Y----" << endl;
 
     // Canny(img, threshold1, threshold2)
     // threshold1 = Determining whether an edge is in the adjacency with another edge
