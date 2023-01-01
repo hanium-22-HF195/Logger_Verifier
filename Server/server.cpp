@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <resolv.h>
 #include <errno.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
@@ -14,7 +13,6 @@
 #include <mutex>
 #include <map>
 #include <thread>
-
 #define CMD_BACKGROUND 1
 #define THIS_IS_SERVER
 
@@ -28,6 +26,7 @@ void closesocket(SOCKET sock_fd);
 void cp(string str){
 	cout << str << endl;
 }
+
 
 string getCID() {
     struct timeb tb;   // <sys/timeb.h>                       
@@ -446,6 +445,7 @@ static void *listenThd(void *arg)
 int initServer()
 {
 	cout << "initServer start" << endl;
+	Read_server_cfg();
 	int res;
 
 	g_pNetwork = (NETWORK_CONTEXT *) malloc(sizeof(NETWORK_CONTEXT));
@@ -505,3 +505,18 @@ void termServer()
 void closesocket(SOCKET sock_fd){
 	close(sock_fd);
 }
+
+// int main(){
+// 	if(!initServer()){
+// 		cout << "Failed init socket!" << endl;
+// 		return -1;
+// 	}
+
+// 	while(1){
+// 		sleep(1);
+// 	}
+
+// 	termServer();
+
+// 	return 0;
+// }

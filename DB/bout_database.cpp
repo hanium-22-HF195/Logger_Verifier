@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <mysql.h>
 #include <cstring>
+#include <string>
 #include <vector>
 #include <sstream>
 #include <sys/timeb.h>
@@ -17,14 +18,14 @@ struct db_user {
 	char *user;
 	char *password;
 	char *database;
-	std::string table;
 };
 
 void mkdir_func(string str){
 	if(mkdir(str.c_str(), 0777) == -1 && errno != EEXIST){
-		fprintf(stderr, "%s directory create error: %s\n", strerror(errno));
+		fprintf(stderr, strerror(errno));
 		exit(0);
 	}
+	else if(errno == EEXIST){}
 	else cout << "Create a directory for storing images" << endl;
 }
 
@@ -37,7 +38,9 @@ private:
 
 public:
 	char x;
-	string table_name;
+	std::string table_name;
+	std::string unverified_table;
+	std::string verified_table;
 	bool Prover_Switch = false;
 
 	bout_database();
@@ -48,25 +51,25 @@ public:
 	void get_list(vector<string> &list, string table, string first_cid, string last_cid, int Switch);
 	MYSQL* mysql_connection_setup(struct db_user sql_user);
 	MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
-	void create_table();
 	void get_table_name();
 	void initDatabase(struct db_user *db_info);
 	void update_database(char* order);
-	string verified_table();
+	//string verified_table();
 	void print_query();
 };
 
 bout_database::bout_database(){
+	Read_DB_cfg();
 	get_table_name();
-	string s_dir(storage_dir);
-	string storage_dir_name = storage_dir + table_name;
-	x = table_name[8];
-	if(ThisID == Server)mkdir_func(storage_dir_name);
+	unverified_table = "unverified_frame";
+	verified_table = "verified_frame";
+	string image_dir_name(image_dir);
+	image_dir_name = image_dir_name + this->table_name;
+	x = this->table_name[8];
+	if(ThisID == Server)mkdir_func(image_dir_name);
 
     initDatabase(&mysqlID);
 	conn = mysql_connection_setup(mysqlID);
-
-	cout << "Initialized Database" << endl; 
 	//print_query();
 }
 
@@ -89,7 +92,7 @@ void bout_database::get_table_name(){
         oss << buf; // YEAR_MMDD
     }              
 
-    table_name = oss.str();
+    this->table_name = oss.str();
 }
 
 void bout_database::initDatabase(struct db_user *db_info){
@@ -97,7 +100,6 @@ void bout_database::initDatabase(struct db_user *db_info){
 	db_info->user = DB_user;
 	db_info->password = DB_password;
 	db_info->database = DB_database;
-	db_info->table = table_name;
 }
 
 MYSQL* bout_database::mysql_connection_setup(struct db_user sql_user){
@@ -115,14 +117,15 @@ MYSQL_RES* bout_database::mysql_perform_query(MYSQL *connection, char *sql_query
 	int retry_cnt = 5;
 	while(mysql_query(connection, sql_query) != 0){
 		if(retry_cnt-- == 0)
+			cout << "Failed mysql_perform_query()" << endl;
 			break;
-		create_table();
 	}
   return mysql_use_result(connection);
 }
 
 void bout_database::insert_database(char* CID, char* Hash, char* Signed_Hash){
-	string sorder = "INSERT INTO " + table_name + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";
+	string sorder = "INSERT INTO " + unverified_table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "');";
+	cout << sorder << endl;
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	res = mysql_perform_query(conn, order);
@@ -133,14 +136,6 @@ void bout_database::insert_pk_database(string key_ID, char* key_value){
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	res = mysql_perform_query(conn, order);
-}
-
-void bout_database::create_table(){
-	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(64), Signed_Hash VARCHAR(350), Verified INTEGER);";
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	mysql_query(conn, order);
-	res = mysql_use_result(conn);
 }
 
 void bout_database::update_database(char* order){
@@ -185,30 +180,30 @@ void bout_database::get_list(vector<string> &list, string table, string first_ci
 	}
 }
 
-string bout_database::verified_table(){
-	string sorder = "select table_name from information_schema.tables where table_schema=schema() and table_name like '%20%' order by table_name;";
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(conn, order);
-	vector<string> table_list;
-	string verified_table;
+// string bout_database::verified_table(){
+// 	string sorder = "select table_name from information_schema.tables where table_schema=schema() and table_name like '%20%' order by table_name;";
+// 	char *order = new char[sorder.length() + 1];
+// 	strcpy(order, sorder.c_str());
+// 	res = mysql_perform_query(conn, order);
+// 	vector<string> table_list;
+// 	string verified_table;
 
-	while((row = mysql_fetch_row(res)) != NULL){
-		table_list.push_back(row[0]);
-	}
+// 	while((row = mysql_fetch_row(res)) != NULL){
+// 		table_list.push_back(row[0]);
+// 	}
 
-	while(!table_list.empty()){
-		//verified_table = table_list.();
-		sorder = "select CID from " + verified_table + " where verified = 0;";
-		delete [] order;
-		order = new char[sorder.length() + 1];
-		strcpy(order, sorder.c_str());
-		res = mysql_perform_query(conn, order);
-		if((row = mysql_fetch_row(res)) == NULL)
-			return verified_table;
-	}
+// 	while(!table_list.empty()){
+// 		//verified_table = table_list.();
+// 		sorder = "select CID from " + verified_table + " where verified = 0;";
+// 		delete [] order;
+// 		order = new char[sorder.length() + 1];
+// 		strcpy(order, sorder.c_str());
+// 		res = mysql_perform_query(conn, order);
+// 		if((row = mysql_fetch_row(res)) == NULL)
+// 			return verified_table;
+// 	}
 	
-}
+// }
 
 void bout_database::print_query(){
 	string sorder = "select * from " + table_name + ";";

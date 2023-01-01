@@ -3,10 +3,10 @@
 #define Server          0x12
 #define WebUI           0x13
 
-#define Char            0xa0
-#define Uchar           0xa1
-#define Int             0xb0
-#define Uint            0xb1
+// #define Char            0xa0
+// #define Uchar           0xa1
+// #define Int             0xb0
+// #define Uint            0xb1
 
 #define PUBKEY_SND      0x01
 #define PUBKEY_RES      0xf1

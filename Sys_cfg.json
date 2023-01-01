@@ -1,0 +1,44 @@
+{
+    "Server" :
+    {
+        "Server Port" : 8700,
+        "storage dir" : "/home/pi/images/",
+
+        "Hash size" : 64,
+        "Signed hash size" : 350,
+        "CID size" : 23
+    },
+
+    "Client" :
+    {
+        "Server IP addr" : "192.168.123.105",
+        "Server port" : 8700,
+
+        "Hash size" : 64,
+        "Signed hash size" : 350,
+        "CID size" : 23
+    },
+
+    "HeaderPacket" :
+    {
+        "Command Header size" : 8,
+        "ASYNC BUFSIZE" : 4096,
+        "Max User Count" : 5
+    },
+
+    "Database" :
+    {
+        "DB IP" : "127.0.0.1",
+        "DB user" : "hanium",
+        "DB password" : "1234",
+        "DB database" : "hanium",
+        "storage dir" : "/home/pi/images/"
+    }, 
+
+    "Default data size" :
+    {
+        "Hash size" : 64,
+        "Signed hash size" : 350,
+        "CID size" : 23
+    }
+}

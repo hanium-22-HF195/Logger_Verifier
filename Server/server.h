@@ -10,6 +10,7 @@
 #include <mysql.h>
 
 using namespace std;
+#define ThisID Server
 
 #include "server_cfg.h"
 #include "command_define_list.h"

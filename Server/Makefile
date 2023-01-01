@@ -8,7 +8,7 @@ CP_DIR			= ./
 
 ## 사용자 소스
 TARGET			= serverTest
-SRCS			= command_parser.cpp server.cpp main_func.cpp
+SRCS			= server.cpp command_parser.cpp main_func.cpp
 #---------------------------------------------------------------------
 ## 소스레벨의 라이브러리
 
@@ -22,7 +22,7 @@ OBJS			= $(SRCS:.cpp=.o)
 
 CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient 
 LDFLAGS			= $(LIVDIRS)
-LIBS			= -lpthread -lmysqlclient
+LIBS			= -lpthread -lmysqlclient -ljsoncpp
 
 #---------------------------------------------------------------------
 CC			= $(CROSS_PREFIX)-gcc
@@ -65,14 +65,6 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET) core
 
-tclean:
-	@if [ -e test.txt ]; then \
-		rm test.txt; \
-	fi
-
-	@if [ -e PUBKEY.txt ]; then \
-		rm PUBKEY.txt; \
-	fi
 
 distclean: clean
 	rm -rf .depend

@@ -5,7 +5,6 @@
 #define __CMDPARSERHEADER__
 
 #include "server.h"
-#include "server_cfg.h"
 #include "command_define_list.h"
 #include "command_function_list.cpp"
 
