@@ -22,7 +22,7 @@ int MAX_USER_CNT;
 
 
 void Read_server_cfg(){
-	ifstream json_dir("/home/pi/hanium_2022/Sys_cfg.json");
+	ifstream json_dir("../Sys_cfg.json");
 	Json::CharReaderBuilder builder;
 	builder["collectComments"] = false;
 	Json::Value value;

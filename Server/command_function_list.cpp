@@ -119,14 +119,12 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	memset(Hash, 0, Hash_size_D);
 	memset(Signed_Hash, 0, Signed_Hash_size_D);
 
-	cout << "CID : " << CID << endl << "Hash : " << Hash << endl << "Signed Hash :" << Signed_Hash << endl;
-
 	int frame_size =  msg->dataSize - CID_size_D - Hash_size_D - Signed_Hash_size_D;
 	FILE *file;
 
 	recv_binary(port, CID_size_D, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
-	cout << "CID : " << CID << endl << "Hash : " << Hash << endl << "Signed Hash :" << Signed_Hash << endl;
+
 	if(bDB.x != CID[9]){
 		bDB.get_table_name();
 		mkdir_func((s_dir + bDB.table_name).c_str());
@@ -145,11 +143,11 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	memset(recv_buf, 0, msg->dataSize);
 	recv_binary(port, Hash_size_D, (void*)recv_buf);
 	strcpy(Hash, (char*)recv_buf);
-	cout << "CID : " << CID << endl << "Hash : " << Hash << endl << "Signed Hash :" << Signed_Hash << endl;
+
 	memset(recv_buf, 0, msg->dataSize);
 	recv_binary(port, Signed_Hash_size_D, (void*)recv_buf);
 	strcpy(Signed_Hash, (char*)recv_buf);
-	cout << "CID : " << CID << endl << "Hash : " << Hash << endl << "Signed Hash :" << Signed_Hash << endl;
+
 	memset(recv_buf, 0, msg->dataSize);
 	recv_binary(port, frame_size, (void*)recv_buf);
 	fwrite(recv_buf, sizeof(char), frame_size, file);
