@@ -69,9 +69,6 @@ Logger: Capture frames by Webcam, and convert into YUV420.
 ```
 Verifier: GET DATAS from SERVER and CHECK for video data's integrity
 ```
-```
-./Verifiy
-```
 ## 2022 09 01 changes -by MJ
 Camera settings are moved to cfg.h. No changes are needed.
 
