@@ -65,11 +65,6 @@ Logger: Capture frames by Webcam, and convert into YUV420.
         USE only Y-frames to find feature vector. USE feature vector to make hash
         Then send YUV420 video data, hash, Contents ID to SERVER
 ```
-```
-IF you can't use Camera to Capture then comment line 406 and 417. After commenting two lines, then add test() below cpature().
-    
-```
-
 + Verifier
 ```
 Verifier: GET DATAS from SERVER and CHECK for video data's integrity
