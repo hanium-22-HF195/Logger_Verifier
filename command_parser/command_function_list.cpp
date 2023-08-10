@@ -6,15 +6,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "../DB/bout_database.cpp"
+#include "../DB/bout_database.h"
 
 using namespace std;
-#define THIS_IS_SERVER
 
 void mkdir_func(string str);
 
 HEADERPACKET for_res_packet;
 void* p_packet = &for_res_packet;
+
 void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 {
 	for_res_packet.startID = ThisID;
@@ -25,14 +25,14 @@ void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dat
 }
 
 void* recv_buf;
-char* CID = new char[CID_size];
-char* Hash = new char[Hash_size];
-char* Signed_Hash = new char[Signed_Hash_size];
+char* Hash = new char[Hash_size_D];
+char* Signed_Hash = new char[Signed_Hash_size_D];
+char* CID = new char[CID_size_D];
 FILE* file;
 char x;
-string s_dir(storage_dir);
 
 bout_database bDB;
+string s_dir(image_dir);
 
 /*
  dataType : 0xa0 = char
@@ -58,8 +58,9 @@ void reshape_buffer(int type, int datasize){
 	}
 }
 
-int still_alive(HEADERPACKET* msg, IO_PORT *port){
-	
+int term_socket(HEADERPACKET* msg, IO_PORT *port){
+	cout << "terminate " << port->s << " socket" << endl;
+	port->checker = true;
 }
 
 /*------------------hi i am & nice to meet you----------------------------*/
@@ -106,7 +107,7 @@ int public_key_send(HEADERPACKET* msg, IO_PORT *port){
 int public_key_response(HEADERPACKET* msg, IO_PORT *port){
 	make_res_Packet(Logger, PUBKEY_RES, 0xa0, 0);
 	
-	return send_binary(port, CMD_HDR_SIZE, p_packet);
+	return send_binary(port, CMD_HDR_SIZE_D, p_packet);
 }
 /*------------------------------------------------------------------------*/
 
@@ -115,20 +116,19 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	reshape_buffer(msg->dataType, msg->dataSize);
 
 	memset(recv_buf, 0, msg->dataSize);
-	memset(CID, 0, CID_size);
-	memset(Hash, 0, Hash_size);
-	memset(Signed_Hash, 0, Signed_Hash_size);
+	memset(CID, 0, CID_size_D);
+	memset(Hash, 0, Hash_size_D);
+	memset(Signed_Hash, 0, Signed_Hash_size_D);
 
-	int frame_size =  msg->dataSize - CID_size - Hash_size - Signed_Hash_size;
+	int frame_size =  msg->dataSize - CID_size_D - Hash_size_D - Signed_Hash_size_D;
 	FILE *file;
 
-	recv_binary(port, CID_size, (void*)recv_buf);
+	recv_binary(port, CID_size_D, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
-	
+
 	if(bDB.x != CID[9]){
 		bDB.get_table_name();
 		mkdir_func((s_dir + bDB.table_name).c_str());
-		bDB.create_table();
 		bDB.x = CID[9];
 	}
 
@@ -140,16 +140,16 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 
 	if (file == NULL)
 		cout << "file creation failed " << endl;
-	memset(recv_buf, 0, msg->dataSize);
 
-	recv_binary(port, Hash_size, (void*)recv_buf);
+	memset(recv_buf, 0, msg->dataSize);
+	recv_binary(port, Hash_size_D, (void*)recv_buf);
 	strcpy(Hash, (char*)recv_buf);
-	memset(recv_buf, 0, msg->dataSize);
 
-	recv_binary(port, Signed_Hash_size, (void*)recv_buf);
+	memset(recv_buf, 0, msg->dataSize);
+	recv_binary(port, Signed_Hash_size_D, (void*)recv_buf);
 	strcpy(Signed_Hash, (char*)recv_buf);
-	memset(recv_buf, 0, msg->dataSize);
 
+	memset(recv_buf, 0, msg->dataSize);
 	recv_binary(port, frame_size, (void*)recv_buf);
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
@@ -171,103 +171,112 @@ int video_data_response(HEADERPACKET* msg, IO_PORT *port){
 
 /*-----------------------Verify request------------------------*/
 int verify_request(HEADERPACKET* msg, IO_PORT *port){
-	if(msg->destID == Server){
-		reshape_buffer(msg->dataType, msg->dataSize);
+	// if(msg->destID == Server){
+	// 	reshape_buffer(msg->dataType, msg->dataSize);
 
-		//Receive Start CID from WebUI
-		recv_binary(port, msg->dataSize, (void*)recv_buf);
-		string first_cid((char*)recv_buf);
+	// 	//Receive Start CID from WebUI
+	// 	recv_binary(port, msg->dataSize, (void*)recv_buf);
+	// 	string first_cid((char*)recv_buf);
 
-		//Receive End CID from WebUI
-		recv_binary(port, msg->dataSize, (void*)recv_buf);
-		string last_cid((char*)recv_buf);
+	// 	//Receive End CID from WebUI
+	// 	recv_binary(port, msg->dataSize, (void*)recv_buf);
+	// 	string last_cid((char*)recv_buf);
 
-		if(first_cid > last_cid){
-			first_cid.swap(last_cid);
-		}
+	// 	if(first_cid > last_cid){
+	// 		first_cid.swap(last_cid);
+	// 	}
 
-		vector<string> pk_list;
-		vector<string> CID_list;
-		map<string, vector<string>> key_CID_map;
+	// 	vector<string> pk_list;
+	// 	vector<string> CID_list;
+	// 	map<string, vector<string>> key_CID_map;
 
-		CIDINFO start_cid = 
-		{
-			first_cid.substr(0, 4),
-			first_cid.substr(5, 2),
-			first_cid.substr(8, 2),
-			first_cid.substr(11, 2),
-			first_cid.substr(14, 2),
-			first_cid.substr(17, 2),
-			first_cid.substr(20,3),
-		};
+	// 	CIDINFO start_cid = 
+	// 	{
+	// 		first_cid.substr(0, 4),
+	// 		first_cid.substr(5, 2),
+	// 		first_cid.substr(8, 2),
+	// 		first_cid.substr(11, 2),
+	// 		first_cid.substr(14, 2),
+	// 		first_cid.substr(17, 2),
+	// 		first_cid.substr(20,3),
+	// 	};
 
-		CIDINFO end_cid = 
-		{
-			last_cid.substr(0, 4),
-			last_cid.substr(5, 2),
-			last_cid.substr(8, 2),
-			last_cid.substr(11, 2),
-			last_cid.substr(14, 2),
-			last_cid.substr(17, 2),
-			last_cid.substr(20,3),
-		};
+	// 	CIDINFO end_cid = 
+	// 	{
+	// 		last_cid.substr(0, 4),
+	// 		last_cid.substr(5, 2),
+	// 		last_cid.substr(8, 2),
+	// 		last_cid.substr(11, 2),
+	// 		last_cid.substr(14, 2),
+	// 		last_cid.substr(17, 2),
+	// 		last_cid.substr(20,3),
+	// 	};
 
-		if(start_cid.Day != end_cid.Day){
-			vector<string> table_list;
-			int j = stoi(end_cid.Day) - stoi(start_cid.Day);
-			for(int i = 0; i <= j; i++){
-				int d = i + stoi(start_cid.Day);
-				string x_table = start_cid.Year + "_" + start_cid.Month + to_string(d);
-				table_list.push_back(x_table);
-			}
-		}
-		else{
-			string vtable_name = start_cid.Year + '_' + start_cid.Month + start_cid.Day;
+	// 	if(start_cid.Day != end_cid.Day){
+	// 		vector<string> table_list;
+	// 		int j = stoi(end_cid.Day) - stoi(start_cid.Day);
+	// 		for(int i = 0; i <= j; i++){
+	// 			int d = i + stoi(start_cid.Day);
+	// 			string x_table = start_cid.Year + "_" + start_cid.Month + to_string(d);
+	// 			table_list.push_back(x_table);
+	// 		}
+	// 	}
+	// 	else{
+	// 		string vtable_name = start_cid.Year + '_' + start_cid.Month + start_cid.Day;
 			
-			bDB.get_list(pk_list, "public_key", "-1", first_cid, -1);
-			bDB.get_list(pk_list, "public_key", first_cid, last_cid, 1);
+	// 		bDB.get_list(pk_list, "public_key", "-1", first_cid, -1);
+	// 		bDB.get_list(pk_list, "public_key", first_cid, last_cid, 1);
 
-			bDB.get_list(CID_list, vtable_name, first_cid, pk_list[1], 0);
-			key_CID_map[pk_list[0]] = CID_list;
-			CID_list.clear();
-			for(int i = 1; i < pk_list.size() - 1; i++){
-				bDB.get_list(CID_list, vtable_name, pk_list[i], pk_list[i + 1], 0);
-				key_CID_map[pk_list[i]] = CID_list;
-				CID_list.clear();
-			}
+	// 		bDB.get_list(CID_list, vtable_name, first_cid, pk_list[1], 0);
+	// 		key_CID_map[pk_list[0]] = CID_list;
+	// 		CID_list.clear();
+	// 		for(int i = 1; i < pk_list.size() - 1; i++){
+	// 			bDB.get_list(CID_list, vtable_name, pk_list[i], pk_list[i + 1], 0);
+	// 			key_CID_map[pk_list[i]] = CID_list;
+	// 			CID_list.clear();
+	// 		}
 
-			bDB.get_list(CID_list, vtable_name, pk_list[pk_list.size()-1], last_cid, 0);
-			key_CID_map[pk_list[pk_list.size()-1]] = CID_list;
-			CID_list.clear();
-		}
+	// 		bDB.get_list(CID_list, vtable_name, pk_list[pk_list.size()-1], last_cid, 0);
+	// 		key_CID_map[pk_list[pk_list.size()-1]] = CID_list;
+	// 		CID_list.clear();
+	// 	}
 
-		map<string, vector<string>>::iterator iter;
-		for (iter = key_CID_map.begin(); iter != key_CID_map.end(); ++iter) { //�??��
-			vector<string> inVect = (*iter).second;
-			int str_size = CID_size * (inVect.size() + 1);
+	// 	map<string, vector<string>>::iterator iter;
+	// 	for (iter = key_CID_map.begin(); iter != key_CID_map.end(); ++iter) { //�??��
+	// 		vector<string> inVect = (*iter).second;
+	// 		int str_size = CID_size_D * (inVect.size() + 1);
 
-			make_res_Packet(Verifier, VER_REQ, Uchar, str_size);
-			//send_binary(Verifier_port, sizeof(HEADERPACKET), p_packet);
+	// 		make_res_Packet(Verifier, VER_REQ, Uchar, str_size);
+	// 		//send_binary(Verifier_port, sizeof(HEADERPACKET), p_packet);
 
-			unsigned char *PK = new unsigned char[CID_size];
-			strcpy((char*)PK, (*iter).first.c_str());
+	// 		unsigned char *PK = new unsigned char[CID_size];
+	// 		strcpy((char*)PK, (*iter).first.c_str());
 			
-			//send_binary(Verifier_port, CID_size, (void*)PK);
+	// 		//send_binary(Verifier_port, CID_size, (void*)PK);
 
-			unsigned char *image_CID = new unsigned char[CID_size];
-			for (int j = 0; j < inVect.size(); j++) {
-				strcpy((char*)image_CID, inVect[j].c_str());
-				//send_binary(Verifier_port, CID_size, image_CID);
-			}
-		}
-	}
-	else if(msg->destID == Verifier){
-		cout <<"hello:";
-	}
-	else{
-		cout << "Something was wrong..." << endl;
-		exit(1);
-	}
+	// 		unsigned char *image_CID = new unsigned char[CID_size];
+	// 		for (int j = 0; j < inVect.size(); j++) {
+	// 			strcpy((char*)image_CID, inVect[j].c_str());
+	// 			//send_binary(Verifier_port, CID_size, image_CID);
+	// 		}
+	// 	}
+	// }
+	// else if(msg->destID == Verifier){
+	// 	cout <<"hello:";
+	// }
+	// else{
+	// 	cout << "Something was wrong..." << endl;
+	// 	exit(1);
+	// }
+}
+int verify_response(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int verify_to_prover(HEADERPACKET *msg, IO_PORT *port){
+	bDB.Prover_Switch = true;
+}
+int prover_response(HEADERPACKET* msg, IO_PORT *port){
+
 }
 /*------------------------------------------------------------------------*/
 

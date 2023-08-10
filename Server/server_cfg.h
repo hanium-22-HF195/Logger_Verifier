@@ -35,6 +35,7 @@ void Read_server_cfg(){
         string raw_dir = value["Server"]["storage dir"].asString();
         storage_dir = new char[raw_dir.length() + 1];
         strcpy(storage_dir, raw_dir.c_str());
+        raw_dir = value["Server"]["c-sss dir"].asString();
 
         Hash_size = value["Server"]["Hash size"].asInt();
         Signed_Hash_size = value["Server"]["Signed hash size"].asInt();

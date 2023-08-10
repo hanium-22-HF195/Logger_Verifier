@@ -2,7 +2,6 @@
 #include <pthread.h>
 #include <string>
 #include <iostream>
-#include <map>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -13,7 +12,8 @@ using namespace std;
 #define ThisID Server
 
 #include "server_cfg.h"
-#include "command_define_list.h"
+#include "../../c-sss/src/shamir.h"
+#include "../command_parser/command_define_list.h"
 
 #define HANDLE void*
 
@@ -56,6 +56,7 @@ typedef struct {
     u_int32_t s;
     u_int32_t timeout;
     struct sockaddr_in  addr;
+	bool checker;
 }IO_PORT;
 
 typedef struct
@@ -85,15 +86,10 @@ void pop_port(int ID);
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
-#endif
+NETWORK_CONTEXT getpnetwork();
 
-#ifdef THIS_IS_SERVER
-#ifndef PLZ_R_ONE_TIME
-#define PLZ_R_ONE_TIME
-
-NETWORK_CONTEXT *g_pNetwork;
-HEADERPACKET sendDataPacket;
-map<int, int> client_port_map;
+extern NETWORK_CONTEXT *g_pNetwork;
+extern HEADERPACKET sendDataPacket;
 
 #endif
-#endif
+

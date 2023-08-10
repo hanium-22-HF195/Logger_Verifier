@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/timeb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cstdint>
@@ -18,12 +19,13 @@
 
 #include "client.h"
 #include "tracex.h"
-#include "command_define_list.h"
 
 #include <iostream>
 
 #define CMD_BACKGROUND 1
 
+NETWORK_CONTEXT *g_pNetwork;
+HEADERPACKET sendDataPacket;
 
 using namespace std;
 
@@ -60,7 +62,6 @@ void insert_port(int ID, int port){
 	static mutex m;
 	while(true){
 		if(m.try_lock()){
-			client_port_map.insert({port, ID});
 			m.unlock();
 			break;
 		}
@@ -71,10 +72,6 @@ void insert_port(int ID, int port){
 
 	while(true){
 		if(m.try_lock()){
-			map<int, int>::iterator iter;
-			for(iter = client_port_map.begin(); iter != client_port_map.end(); ++iter){
-				cout << "key : " << (*iter).first << ", value : " << (*iter).second << endl;
-			}
 			m.unlock();
 			break;
 		}
@@ -88,11 +85,6 @@ void pop_port(int port){
 	static mutex m;
 	while(true){
 		if(m.try_lock()){
-			map<int, int>::iterator iter;
-			for(iter = client_port_map.begin(); iter != client_port_map.end(); ++iter){
-				if((*iter).second == port)
-					client_port_map.erase((*iter).first);
-			}
 			m.unlock();
 			break;
 		}
@@ -326,7 +318,7 @@ SOCKET create_socket()
 int initClient()
 {
 	cout << "----Client Initializing----" << endl;
-
+	Read_client_cfg();
 
 	g_pNetwork = (NETWORK_CONTEXT*) malloc(sizeof(NETWORK_CONTEXT));
 	g_pNetwork->m_socket = create_socket();
@@ -356,6 +348,10 @@ void termClient()
 	close(g_pNetwork->m_socket);
 	free(g_pNetwork);
 	cout << "terminate Client end" << endl;
+}
+
+void closesocket(SOCKET sock_fd){
+	close(sock_fd);
 }
 
 

@@ -7,8 +7,8 @@ CROSS_PREFIX		=
 CP_DIR			= ./
 
 ## 사용자 소스
-TARGET			= serverTest
-SRCS			= server.cpp main_func.cpp
+TARGET			= command_parser
+SRCS			= command_parser.cpp
 #---------------------------------------------------------------------
 ## 소스레벨의 라이브러리
 
@@ -39,13 +39,13 @@ MV	= mv
 #--------------------------------------------------------------------
 
 all : $(TARGET)
-	
+
+obj : $(OBJS)
 
 $(TARGET) : $(OBJS)
-	cd ../command_parser; make obj; cp command_parser.o ../Server/command_parser.o
-	$(CXX) $(LDFLAGS) $(OBJS) command_parser.o -o $@ $(LIBS)
+	$(CXX) $(LDFLAGS) $(OBJS) -o $@ $(LIBS)
 	$(NM) $(TARGET) > $(TARGET).map
-	
+
 %.o:%.c
 	@echo "Compiling $< ..."
 	$(CC) -c $(CFLAGS) -o $@ $<
@@ -58,7 +58,6 @@ dep :
 	$(CXX)	-M	$(INCLUDEDIRS)	$(SRCS) > .depend
 
 clean:
-	cd ../command_parser; make clean
 	rm -f *.bak
 	rm -f *.map
 	rm -f *.o

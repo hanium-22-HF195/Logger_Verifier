@@ -5,7 +5,7 @@
 #include <string>
 
 #include "command_parser.h"
-#include "tracex.h"
+#include "../Server/tracex.h"
 
 using namespace std;
 
@@ -20,7 +20,7 @@ cmdp_desp parser_desp[] =
 	{VER_2_PROV					, verify_to_prover		},
 	{PROV_RES					, prover_response		},
 	
-	{STILL_ALIVE				, still_alive			},
+	{TERM_SOCKET				, term_socket			},
 	{HI_I_M						, hi_i_am				},
 	{NICE_2_MEET_U				, nice_to_meet_you		},
 

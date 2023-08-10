@@ -11,22 +11,22 @@
 #include <sys/timeb.h>
 #include <sstream>
 #include <mutex>
-#include <map>
 #include <thread>
 #define CMD_BACKGROUND 1
-#define THIS_IS_SERVER
 
 #include "server.h"
 #include "tracex.h"
 
 using namespace std;
 
+NETWORK_CONTEXT *g_pNetwork;
+HEADERPACKET sendDataPacket;
+
 void closesocket(SOCKET sock_fd);
 
 void cp(string str){
 	cout << str << endl;
 }
-
 
 string getCID() {
     struct timeb tb;   // <sys/timeb.h>                       
@@ -61,7 +61,6 @@ void insert_port(int ID, int port){
 	static mutex m;
 	while(true){
 		if(m.try_lock()){
-			client_port_map.insert({port, ID});
 			m.unlock();
 			break;
 		}
@@ -72,10 +71,6 @@ void insert_port(int ID, int port){
 
 	while(true){
 		if(m.try_lock()){
-			map<int, int>::iterator iter;
-			for(iter = client_port_map.begin(); iter != client_port_map.end(); ++iter){
-				cout << "key : " << (*iter).first << ", value : " << (*iter).second << endl;
-			}
 			m.unlock();
 			break;
 		}
@@ -89,11 +84,6 @@ void pop_port(int port){
 	static mutex m;
 	while(true){
 		if(m.try_lock()){
-			map<int, int>::iterator iter;
-			for(iter = client_port_map.begin(); iter != client_port_map.end(); ++iter){
-				if((*iter).second == port)
-					client_port_map.erase((*iter).first);
-			}
 			m.unlock();
 			break;
 		}
@@ -312,6 +302,9 @@ static void *ClientServiceThread(void *arg)
 		FD_SET( fd_socket, &reads );
 		tv.tv_sec = 10;
 		tv.tv_usec = 0;
+		if(clientThd->checker){
+			goto SERVICE_DONE;
+		}
 
 		//make HEADERPACKET
 		res = select( fd_max, &reads, NULL, NULL, &tv );
@@ -357,6 +350,7 @@ static void *ClientServiceThread(void *arg)
 			// 	continue;
 			// }
 		}
+		
 		send_retry_cnt = 5;
 
 		usleep(10000);
@@ -427,6 +421,7 @@ static void *listenThd(void *arg)
 		thisThd->port.s = news;
 		thisThd->port.addr = addr;
 		thisThd->port.timeout = 30;
+		thisThd->port.checker = false;
 		
 		ret = pthread_create( &thisThd->clientThread, NULL, ClientServiceThread, (void*)&thisThd->port);
 		if( ret != 0 ){
@@ -505,18 +500,3 @@ void termServer()
 void closesocket(SOCKET sock_fd){
 	close(sock_fd);
 }
-
-// int main(){
-// 	if(!initServer()){
-// 		cout << "Failed init socket!" << endl;
-// 		return -1;
-// 	}
-
-// 	while(1){
-// 		sleep(1);
-// 	}
-
-// 	termServer();
-
-// 	return 0;
-// }

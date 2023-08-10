@@ -190,31 +190,6 @@ void bout_database::get_list(vector<string> &list, string table, string first_ci
 	}
 }
 
-// string bout_database::verified_table(){
-// 	string sorder = "select table_name from information_schema.tables where table_schema=schema() and table_name like '%20%' order by table_name;";
-// 	char *order = new char[sorder.length() + 1];
-// 	strcpy(order, sorder.c_str());
-// 	res = mysql_perform_query(conn, order);
-// 	vector<string> table_list;
-// 	string verified_table;
-
-// 	while((row = mysql_fetch_row(res)) != NULL){
-// 		table_list.push_back(row[0]);
-// 	}
-
-// 	while(!table_list.empty()){
-// 		//verified_table = table_list.();
-// 		sorder = "select CID from " + verified_table + " where verified = 0;";
-// 		delete [] order;
-// 		order = new char[sorder.length() + 1];
-// 		strcpy(order, sorder.c_str());
-// 		res = mysql_perform_query(conn, order);
-// 		if((row = mysql_fetch_row(res)) == NULL)
-// 			return verified_table;
-// 	}
-	
-// }
-
 void bout_database::print_query(){
 	string sorder = "select * from " + table_name + ";";
 	char *order = new char[sorder.length() + 1];
