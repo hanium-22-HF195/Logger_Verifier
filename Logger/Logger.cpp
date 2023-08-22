@@ -17,18 +17,14 @@
 
 #include "logger_cfg.h"
 #include "Logger_function_list.h"
-#include "sign.cpp"
+#include "../openssl/sign.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
 #include "../Client/client.cpp"
-#include "../Client/command_define_list.h"
+#include "../command_parser/command_define_list.h"
 #include "../msg_queue/msg_queue.cpp"
 
 using namespace std;
 using namespace cv;
-
-int width = DEFAULT_WIDTH;
-int height = DEFAULT_HEIGHT;
-int fps = DEFAULT_FPS;
 
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
@@ -49,11 +45,13 @@ int key_generation()
 {
     cout << "----Key Geneartion----" << endl;
     RSA *privateRSA = genPrivateRSA();
-    publicKey = genPubicRSA(privateRSA);
+    publicKey = genPublicRSA(privateRSA);
 
     cout << "PRIKEY and PUBKEY are made" << endl;
     cout << "public Key = " << endl
-         << publicKey;
+         << publicKey << endl;
+    cout << "private key = " << endl
+         << privateKey;
 
     cout << "SAVE PUBLIC KEY FOR VERIFIER" << endl;
 
@@ -76,7 +74,7 @@ int send_pubKey_to_server()
     char *pubKey_buffer = new char[pubKey_bufsize];
     strcpy(pubKey_buffer, publicKey.c_str());
 
-    makePacket(Server, PUBKEY_SND, 0xa0, strlen(pubKey_buffer));
+    makePacket(Server, PUBKEY_REQ, 0xa0, strlen(pubKey_buffer));
     void *p_packet = &sendDataPacket;
 
     if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
@@ -234,7 +232,7 @@ void capture()
             cout << "lamping time" << endl;
         }
 
-        if (bgr_queue.size() == DEFAULT_FRAME_COUNT)
+        if (bgr_queue.size() == frame_count)
         {
 
             int ret = pthread_cancel(UpdThread);
@@ -583,15 +581,28 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
 
 int main(int, char **)
 {
+    Read_Logger_cfg();
     
     // key GEN
-    key_generation();
+    //key_generation();
 
     // Init Client
     if (!initClient())
     {
         cout << "init client error!!" << endl;
         return -1;
+    }
+
+    while(true){
+
+        makePacket(Server, HI_I_M, 0xa0, 0x00);
+        void *p_packet = &sendDataPacket;
+
+        if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
+        {
+            cout << "PubKey send Error!!" << endl;
+        }
+        return 0;
     }
 
     send_pubKey_to_server();

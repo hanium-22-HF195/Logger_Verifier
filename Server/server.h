@@ -13,6 +13,7 @@ using namespace std;
 
 #include "server_cfg.h"
 #include "../../c-sss/src/shamir.h"
+#include "../openssl/sign.h"
 #include "../command_parser/command_define_list.h"
 
 #define HANDLE void*

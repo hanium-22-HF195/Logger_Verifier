@@ -21,7 +21,7 @@ int ASYNC_BUFSIZE;
 int MAX_USER_CNT;
 //----------------------------------
 
-#define ThisID Logger
+#define ThisID Client
 
 #pragma comment(lib, "jsoncpp.lib")
 

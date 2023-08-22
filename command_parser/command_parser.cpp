@@ -11,7 +11,7 @@ using namespace std;
 
 cmdp_desp parser_desp[] =
 {
-	{PUBKEY_SND					, public_key_send		},
+	{PUBKEY_REQ					, public_key_request	},
 	{PUBKEY_RES					, public_key_response	},
 	{VIDEO_DATA_SND				, video_data_send		},
 	{VIDEO_DATA_RES				, video_data_response	},
@@ -54,18 +54,20 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	}
 
 	for (i = 0, ack = -3; i < len; i++){
+		if(ack == 1) break;
 		if(parser_desp[i].code == pmsg->command){
 			ack = parser_desp[i].callback(pmsg, &port);
 		}
 	}
-	if(ack == -3) {
-		cout << "Somethings Wrong... callback function doesn't work";
-		return -1;
+
+	switch(ack){
+		case -3 : cout << "Somethings Wrong... callback function doesn't work";
+				  return -1;
+		case -1 : cout << " doesn't work;" << endl;
+				  return 0;
+		case 0 : return 0;
 	}
-	else if(ack == -1){
-		cout << " doesn't work;" << endl;
-		return 0;
-	}
+
 	return 0;
 }
 #endif

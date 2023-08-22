@@ -5,11 +5,14 @@ CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql
 LIBS = -ljsoncpp -lmysqlclient
 
 TARGET   = Test
-SOURCES := client_test.cpp
+SOURCES := client.cpp
+TEST_SOURCES := client_test.cpp
 
 OBJS = $(SOURCES:.cpp=.o)
 
 all : $(TARGET)
+
+Client : $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJS)
 	cd ../command_parser; make obj; cp command_parser.o ../Client/command_parser.o

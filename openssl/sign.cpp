@@ -1,16 +1,9 @@
 #include <iostream>
-#include <openssl/aes.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/err.h>
-#include <assert.h>
-
-#include <cstring>
+#include <string>
+#include "sign.h"
 
 using namespace std;
+
 string privateKey = "";
 string publicKey = "";
 
@@ -25,6 +18,18 @@ RSA* createPrivateRSA(std::string key) {
   return rsa;
 }
  
+RSA* createPublicRSA(std::string key) {
+  RSA *rsa = NULL;
+  BIO *keybio;
+  const char* c_string = key.c_str();
+  keybio = BIO_new_mem_buf((void*)c_string, -1);
+  if (keybio==NULL) {
+      return 0;
+  }
+  rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);
+  return rsa;
+}
+
 // generate private key
 RSA* genPrivateRSA() {
   RSA *rsa = RSA_generate_key(2048, 3, NULL, NULL);
@@ -40,9 +45,7 @@ RSA* genPrivateRSA() {
   return rsa;
 }
 
-
-char* genPubicRSA(RSA * rsa) {
-
+char* genPublicRSA(RSA * rsa) {
    BIO	*bp_public = NULL;
    
   // PUB KEY to string
@@ -53,19 +56,6 @@ char* genPubicRSA(RSA * rsa) {
   BIO_read(bp_public, pub_pkey, pub_pkey_size);
 
   return pub_pkey;
-}
-
-
-RSA* createPublicRSA(std::string key) {
-  RSA *rsa = NULL;
-  BIO *keybio;
-  const char* c_string = key.c_str();
-  keybio = BIO_new_mem_buf((void*)c_string, -1);
-  if (keybio==NULL) {
-      return 0;
-  }
-  rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);
-  return rsa;
 }
 
 bool RSASign( RSA* rsa,
@@ -93,7 +83,6 @@ bool RSASign( RSA* rsa,
   return true;
 }
 
-
 void Base64Encode( const unsigned char* buffer,
                    size_t length,
                    char** base64Text) {
@@ -112,7 +101,6 @@ void Base64Encode( const unsigned char* buffer,
 
   *base64Text=(*bufferPtr).data;
 }
-
 
 char* signMessage(std::string privateKey, std::string plainText) {
   RSA* privateRSA = createPrivateRSA(privateKey); 

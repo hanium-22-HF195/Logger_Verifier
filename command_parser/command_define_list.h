@@ -9,7 +9,7 @@
 #define Int             0xb0
 #define Uint            0xb1
 
-#define PUBKEY_SND      0x01
+#define PUBKEY_REQ      0x01
 #define PUBKEY_RES      0xf1
 #define VIDEO_DATA_SND  0x02
 #define VIDEO_DATA_RES  0xf2

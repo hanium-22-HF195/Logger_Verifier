@@ -13,6 +13,7 @@
 #include <mutex>
 #include <thread>
 #define CMD_BACKGROUND 1
+#define THIS_IS_SERVER
 
 #include "server.h"
 #include "tracex.h"
@@ -318,7 +319,7 @@ static void *ClientServiceThread(void *arg)
 			goto SERVICE_DONE;
 		}
 		while(retry_cnt >= 0) {
-			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
+			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );  //강제로 연결이 끊어졌을 경우 res가 255로 나오는 에러
 			if(res <= 0) {
 				if(retry_cnt <= 0){
 					TRACE_ERR("connect socket(%d) Command receive error\n", fd_socket);
