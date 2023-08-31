@@ -1,4 +1,9 @@
 ##  Download openssl dev
 
-sudo pat-get install libssl-dev
+wget https://www.openssl.org/source/old/(latest version)/(file name) -> Please check openssl verison in www.openssl.org
+tar xvf (file name)
 
+cd (openssl folder)
+./config
+sudo make
+sudo make install

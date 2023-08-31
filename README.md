@@ -11,6 +11,15 @@ Verifier: Request data from Server and Verify frames. Send Verified result to Se
 ```
 Server: Server module
 ```
+```
+DB: Database related code
+```
+```
+command_parser: Request handling
+```
+```
+openssl: For encryption and decryption
+```
 # How to Use
 + prerequisite
 ```
@@ -79,4 +88,3 @@ Private Key and Public Key generation added
 
 ## 2022 09 25 changes -by MJ
 Client Related condes were moved to Client folder
-
