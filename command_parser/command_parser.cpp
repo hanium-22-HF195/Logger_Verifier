@@ -24,6 +24,17 @@ cmdp_desp parser_desp[] =
 	{HI_I_M						, hi_i_am				},
 	{NICE_2_MEET_U				, nice_to_meet_you		},
 
+	{GEN_AES					, generate_aes			},
+	{GEN_SHARES					, generate_shares		},
+	{SHARE_REQ					, share_request			},
+	{SHARE_RES					, share_response		},
+	{ANO_SHARE_REQ				, another_share_request	},
+	{ANO_SHARE_RES				, another_share_response},
+	{GEN_KEY_LG					, generate_key_at_logger},
+	{ENC_DATA_LG				, encrypt_data_at_logger},
+	{ENC_DATA_REQ				, encrypt_data_request	},
+	{ENC_DATA_RES				, encrypt_data_response	},
+	{DEC_DATA_SER				, decrypt_data_at_server},
 
 	// Testing command
 	{TEST_CMD					, test					},
@@ -49,12 +60,12 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	cout << "---------------------------------" << endl;
 
 	if(pmsg->destID != ThisID){
-		cout << port.s << " port has problem, Wrong destination!! " << endl;
+		cout << port.s << " " << endl;
 		return -1; //"HEADERPACKET' destID != ThisID";
 	}
 
 	for (i = 0, ack = -3; i < len; i++){
-		if(ack == 1) break;
+		if(ack == 1 || ack == 0) break;
 		if(parser_desp[i].code == pmsg->command){
 			ack = parser_desp[i].callback(pmsg, &port);
 		}

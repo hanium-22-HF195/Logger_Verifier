@@ -6,12 +6,16 @@
 
         "Hash size" : 64,
         "Signed hash size" : 350,
-        "CID size" : 23
+        "CID size" : 23,
+        
+        "public key path" : "/home/pi/2023_pro/pubkey.txt",
+        "private key path" : "/home/pi/2023_pro/prikey.txt",
+        "Symmetric key seed" : "seed key"
     },
 
     "Client" :
     {
-        "Server IP addr" : "192.168.219.121",
+        "Server IP addr" : "192.168.219.155",
         "Server port" : 8700,
 
         "Hash size" : 64,
@@ -27,10 +31,9 @@
         "frame count" : 10,
         "signed hash bufsize" : 350,
 
-        "public key path" : "/home/pi/hanium_2022/Verifier/pubkey.txt",
-        "original file path" : "/home/pi/Web-UI/static/images/L_original.png",
         "Y frame file path" : "/home/pi/Web-UI/static/images/L_Y_frame.png",
-        "hash file path" : "/home/pi/Web-UI/static/hash.txt"
+        "hash file path" : "/home/pi/Web-UI/static/hash.txt",
+        "original file path" : "/home/pi/Web-UI/static/images/L_original.png"
     },
 
     "HeaderPacket" :
@@ -54,5 +57,7 @@
         "Hash size" : 64,
         "Signed hash size" : 350,
         "CID size" : 23
-    }
+    },
+
+    "command for test" : 128
 }

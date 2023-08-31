@@ -7,13 +7,12 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <mysql.h>
+#include <openssl/evp.h>
 
 using namespace std;
 #define ThisID Server
 
 #include "server_cfg.h"
-#include "../../c-sss/src/shamir.h"
-#include "../openssl/sign.h"
 #include "../command_parser/command_define_list.h"
 
 #define HANDLE void*
@@ -57,7 +56,7 @@ typedef struct {
     u_int32_t s;
     u_int32_t timeout;
     struct sockaddr_in  addr;
-	bool checker;
+	
 }IO_PORT;
 
 typedef struct
@@ -71,6 +70,9 @@ typedef struct
 	u_int32_t recvLoop;
 	u_int32_t m_socket;
 	IO_PORT port;
+
+	EVP_CIPHER_CTX *en;
+    EVP_CIPHER_CTX *de;
 
 }NETWORK_CONTEXT;
 

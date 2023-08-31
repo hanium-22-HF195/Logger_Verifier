@@ -21,6 +21,8 @@ int ASYNC_BUFSIZE;
 int MAX_USER_CNT;
 //----------------------------------
 
+int command;
+
 #define ThisID Client
 
 #pragma comment(lib, "jsoncpp.lib")
@@ -52,6 +54,8 @@ void Read_client_cfg(){
         CMD_HDR_SIZE = value["HeaderPacket"]["Command Header size"].asInt();
         ASYNC_BUFSIZE = value["HeaderPacket"]["ASYNC BUFSIZE"].asInt();
         MAX_USER_CNT = value["HeaderPacket"]["Max User Count"].asInt();
+
+        command = value["command for test"].asInt();
 	}
 }
 

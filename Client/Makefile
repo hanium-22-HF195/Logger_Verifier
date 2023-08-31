@@ -1,12 +1,14 @@
 CXX = g++
 
-INCLUDEDIRS		+= -I.
+INCLUDEDIRS		+= -I. -I/usr/local/opt/openssl@3/include
+LIVDIRS			+= -L /usr/local/opt/openssl@3/lib
+
 CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient 
-LIBS = -ljsoncpp -lmysqlclient
+LIBS 			= -ljsoncpp -lmysqlclient -lssl -lcrypto -L /usr/local/opt/openssl/lib -lpthread
+LDFLAGS			= $(LIVDIRS)
 
 TARGET   = Test
-SOURCES := client.cpp
-TEST_SOURCES := client_test.cpp
+SOURCES := client_test.cpp
 
 OBJS = $(SOURCES:.cpp=.o)
 
@@ -16,11 +18,11 @@ Client : $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJS)
 	cd ../command_parser; make obj; cp command_parser.o ../Client/command_parser.o
-	$(CXX)  $(OBJS) command_parser.o -o $@ $(LIBS)
+	$(CXX) $(LDFLAGS) $(OBJS) command_parser.o -o $@ $(LIBS)
 
 %.o:%.cpp
 	@echo "C++ compiling $< ..."
-	$(CXX) -c $(CFLAGS) -o $@ $<
+	$(CXX) -nostartfiles -c $(CFLAGS) -o $@ $<
 
 clean:
 	cd ../command_parser; make clean

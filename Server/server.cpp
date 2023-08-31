@@ -17,6 +17,7 @@
 
 #include "server.h"
 #include "tracex.h"
+#include "../openssl/sign.cpp"
 
 using namespace std;
 
@@ -303,9 +304,6 @@ static void *ClientServiceThread(void *arg)
 		FD_SET( fd_socket, &reads );
 		tv.tv_sec = 10;
 		tv.tv_usec = 0;
-		if(clientThd->checker){
-			goto SERVICE_DONE;
-		}
 
 		//make HEADERPACKET
 		res = select( fd_max, &reads, NULL, NULL, &tv );
@@ -332,12 +330,13 @@ static void *ClientServiceThread(void *arg)
 			}
 		}
 		retry_cnt = 5;
-		
-		if(cmd_parser(*clientThd, (HEADERPACKET *)buf) == -1) {
+		res = cmd_parser(*clientThd, (HEADERPACKET *)buf);
+		if(res == -1) {
 			cout << "cmd_parser return -1" << endl;
 			TRACE_ERR("Data is sent with wrong destination : connected socket (%s)\n", fd_socket);
 			continue;
 		}
+		else if(res == 0) break;
 		else{
 			send_retry_cnt--;
 			if(send_retry_cnt == 0) {
@@ -422,7 +421,6 @@ static void *listenThd(void *arg)
 		thisThd->port.s = news;
 		thisThd->port.addr = addr;
 		thisThd->port.timeout = 30;
-		thisThd->port.checker = false;
 		
 		ret = pthread_create( &thisThd->clientThread, NULL, ClientServiceThread, (void*)&thisThd->port);
 		if( ret != 0 ){
@@ -442,6 +440,7 @@ int initServer()
 {
 	cout << "initServer start" << endl;
 	Read_server_cfg();
+	//key_generation();
 	int res;
 
 	g_pNetwork = (NETWORK_CONTEXT *) malloc(sizeof(NETWORK_CONTEXT));

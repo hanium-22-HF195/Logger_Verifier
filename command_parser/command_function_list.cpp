@@ -7,9 +7,11 @@
 #include <sys/types.h>
 
 #include "../DB/bout_database.h"
+#include "../openssl/sign.h"
+#include "../../c-sss/src/shamir.c"
+#include "../../c-sss/src/strtok.c"
 
 using namespace std;
-
 void mkdir_func(string str);
 
 HEADERPACKET for_res_packet;
@@ -29,7 +31,6 @@ char* Hash = new char[Hash_size_D];
 char* Signed_Hash = new char[Signed_Hash_size_D];
 char* CID = new char[CID_size_D];
 FILE* file;
-char x;
 
 bout_database bDB;
 string s_dir(image_dir);
@@ -59,14 +60,15 @@ void reshape_buffer(int type, int datasize){
 }
 
 int term_socket(HEADERPACKET* msg, IO_PORT *port){
-	cout << "terminate " << port->s << " socket" << endl;
-	port->checker = true;
+	cout << "socket " << port->s << " terminated" << endl;
+	return 0;
 }
 
 /*------------------hi i am & nice to meet you----------------------------*/
 int hi_i_am(HEADERPACKET* msg, IO_PORT *port){
+	//cout << "HEADERPACKET received" << end;
 	insert_port(msg->destID, port->s);
-	make_res_Packet(msg->startID, 0xf9, 0x00, 0x00);
+	make_res_Packet(msg->startID, NICE_2_MEET_U, 0x00, 0x00);
 
 	send_binary(port, sizeof(HEADERPACKET), p_packet);
 	return 1;
@@ -86,21 +88,19 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-	string sorder = "select key_ID from public_key where key_status = 1;";
-	char* order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	string key_ID = bDB.get_latest_key_ID(order);
+
+	string key_ID = bDB.get_latest_key_ID();
 	
-	sorder = "update public_key set key_status = 0 where key_ID = '" + key_ID + "';";
-	delete [] order;
-	order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	bDB.update_database(order);
-	
+	string filed = "key_ID";
+	string set = "key_status = 0";
+	string table = "public_keys";
+	string where = "key_ID = '" + key_ID +"'";
+	bDB.update_database(key_ID, set, table, where);
+
 	string pk((char*)recv_buf);
 	char *key_value = new char[pk.length() + 1];
 	strcpy(key_value, pk.c_str());
-	bDB.insert_pk_database(getCID(), key_value);
+	bDB.insert_pk_database(getCID(), 0,key_value);
 
 	return 1;
 }
@@ -126,14 +126,8 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	recv_binary(port, CID_size_D, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
 
-	if(bDB.x != CID[9]){
-		bDB.get_table_name();
-		mkdir_func((s_dir + bDB.table_name).c_str());
-		bDB.x = CID[9];
-	}
-
 	string frame_dir((const char*)recv_buf);
-	frame_dir = s_dir + bDB.table_name + "/" + frame_dir; 
+	frame_dir = s_dir + "/" + frame_dir; 
 	const char* file_name = frame_dir.c_str();
 
 	file = fopen(file_name, "wb");
@@ -154,7 +148,7 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
 	make_res_Packet(Logger, VIDEO_DATA_RES, 0, 0);
-	bDB.insert_database(CID, Hash, Signed_Hash);
+	bDB.insert_video_data(CID, Hash, Signed_Hash);
 
 	fflush(file);
 	fclose(file);
@@ -279,6 +273,92 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 
 }
 /*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+/* 																		  */
+int generate_aes(HEADERPACKET* msg, IO_PORT *port){
+	cout << "generate symmetric key" << endl;
+	string skey = "seed key";
+
+    EVP_CIPHER_CTX *en = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX *de = EVP_CIPHER_CTX_new();
+
+	char *key_data = new char[skey.length() + 1];
+	strcpy(key_data, skey.c_str());
+	int key_data_len = skey.length() + 1;
+
+	unsigned char key[32], iv[32];
+	cout << key << endl;
+
+	aes_init((unsigned char*)key_data, key_data_len, NULL, en, de, key, iv);
+
+	string generated_date = getCID();
+	skey = static_cast<string>(reinterpret_cast<const char *>(key));    	//***check
+
+	bDB.insert_aes_key(generated_date, skey);
+	cout << "symmetric key generation complete" << endl;
+
+	char *shares = generate_share_strings((char*)key, 3, 2);
+	fprintf(stdout, "%s", shares);
+
+	free(shares);
+	const char *ptxt = "Hello world!";
+
+	int len = strlen(ptxt) + 1;;
+
+	unsigned char *ciphertext = aes_encrypt(en, (unsigned char *)ptxt, &len);
+	cout << "cipher text : " << ciphertext << endl;
+
+	unsigned char *plaintext = aes_decrypt(de, ciphertext, &len);
+	cout << "plain text : " << plaintext << endl;
+
+	return 1;
+}
+
+int generate_shares(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int share_request(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int share_response(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int another_share_request(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int another_share_response(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int generate_key_at_logger(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int encrypt_data_at_logger(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int encrypt_data_request(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int encrypt_data_response(HEADERPACKET* msg, IO_PORT *port){
+
+}
+int decrypt_data_at_server(HEADERPACKET* msg, IO_PORT *port){
+	
+}
+
+
+
+/*																		  */
+/*------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
 
 /*
  This function is for test. Receive data and write down .txt file. 

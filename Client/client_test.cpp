@@ -9,7 +9,7 @@ int main(){
         return -1;
     }
 
-    makePacket(Server, TERM_SOCKET, 0x00, 0);
+    makePacket(Server, command, 0x00, 0);
     void *p_packet = &sendDataPacket;
 
     if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))

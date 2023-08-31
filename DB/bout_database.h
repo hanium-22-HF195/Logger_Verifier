@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+using namespace std;
 #include "Database_cfg.h"
 
 struct db_user {
@@ -36,8 +37,6 @@ private:
 	MYSQL_ROW row;
 
 public:
-	char x;
-	std::string table_name;
 	std::string unverified_table;
 	std::string verified_table;
 	bool Prover_Switch = false;
@@ -45,28 +44,22 @@ public:
 	bout_database();
 	~bout_database();
 	void select_database(char* order, string &CID, string &HASH, string &SIGNED_HASH);
-	void insert_database(char* CID, char* Hash, char* Signed_Hash);
-	void insert_pk_database(string key_ID, char* key_value);
-	string get_latest_key_ID(char* order);
-	void get_list(vector<string> &list, string table, string first_cid, string last_cid, int Switch);
+	void insert_video_data(char* CID, char* Hash, char* Signed_Hash);
+	void insert_pk_database(string key_ID, string LID, char* key_value);
+	void insert_aes_key(string generated_date, string key);
+	string get_latest_key_ID();
 	MYSQL* mysql_connection_setup(struct db_user sql_user);
 	MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
-	void get_table_name();
 	void initDatabase(struct db_user *db_info);
-	void update_database(char* order);
-	//string verified_table();
+	void update_database(string field, string set, string table, string where);
 	void print_query();
 };
 
 bout_database::bout_database(){
 	Read_DB_cfg();
-	get_table_name();
-	unverified_table = "unverified_frame";
+	unverified_table = "data_table";
 	verified_table = "verified_frame";
-	string image_dir_name(image_dir);
-	image_dir_name = image_dir_name + this->table_name;
-	x = this->table_name[8];
-	if(ThisID == Server)mkdir_func(image_dir_name);
+	if(ThisID == Server)mkdir_func(image_dir);
 
     initDatabase(&mysqlID);
 	conn = mysql_connection_setup(mysqlID);
@@ -76,23 +69,6 @@ bout_database::bout_database(){
 bout_database::~bout_database(){
 	mysql_free_result(res);
 	mysql_close(conn);
-}
-
-void bout_database::get_table_name(){
-	struct timeb tb;   // <sys/timeb.h>                       
-    struct tm tstruct;                      
-    std::ostringstream oss;   
-                           
-    char buf[128];                                            
-                                                              
-    ftime(&tb);
-    // For Thread safe, use localtime_r
-    if (nullptr != localtime_r(&tb.time, &tstruct)) {         
-        strftime(buf, sizeof(buf), "%Y_%m%d", &tstruct);
-        oss << buf; // YEAR_MMDD
-    }              
-
-    this->table_name = oss.str();
 }
 
 void bout_database::initDatabase(struct db_user *db_info){
@@ -131,24 +107,34 @@ void bout_database::select_database(char* order, string &CID, string &HASH, stri
 		HASH = row[1];
 		SIGNED_HASH = row[2];
 	}
-}
+} //* CID, HASH, SIGNED_HASH를 반환함
 
-void bout_database::insert_database(char* CID, char* Hash, char* Signed_Hash){
+void bout_database::insert_video_data(char* CID, char* Hash, char* Signed_Hash){
 	string sorder = "INSERT INTO " + unverified_table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "');";
 	cout << sorder << endl;
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
+	char *order = const_cast<char*>(sorder.c_str());
+	res = mysql_perform_query(conn, order);
+} //** table name이 고정된 상태. command function 내에서 자체적으로 쿼리 작성 후 수행해도 상관없을듯 함
+
+void bout_database::insert_pk_database(string key_ID, string LID, char* key_value){
+	string sorder = "INSERT INTO public_keys values('" + key_ID + "', '" + key_value + ", 1, " + LID + ");";
+	char *order = const_cast<char*>(sorder.c_str());
 	res = mysql_perform_query(conn, order);
 }
 
-void bout_database::insert_pk_database(string key_ID, char* key_value){
-	string sorder = "INSERT INTO public_key values('" + key_ID + "', '" + key_value + "', 1);";
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
+void bout_database::insert_aes_key(string generated_date, string key){
+	string sorder = "INSERT INTO symmetric_key values(" + generated_date + ", " + key + ", 1);";
+	char *order = const_cast<char*>(sorder.c_str());
+	cout << order << endl;
 	res = mysql_perform_query(conn, order);
 }
 
-void bout_database::update_database(char* order){
+void bout_database::update_database(string field, string set, string table, string where = ""){
+	string sorder = "update " + field + 
+					" set " + set + 
+					" where " + where + ";";
+	char *order = const_cast<char*>(sorder.c_str());
+	
 	res = mysql_perform_query(conn, order);
 	cout << endl << "---------------------------------------------------" << endl;
 	while((row = mysql_fetch_row(res)) != NULL){
@@ -157,43 +143,21 @@ void bout_database::update_database(char* order){
 	}
 }
 
-string bout_database::get_latest_key_ID(char* order){
+string bout_database::get_latest_key_ID(){
+
+	char order[] = "select key_ID from public_key where key_status = 1;";
 	res = mysql_perform_query(conn, order);
 	string key_ID;
 	while((row = mysql_fetch_row(res)) != NULL){
 		key_ID = row[0];
-		cout << "key_ID : " << key_ID << endl;
 	}
 	
 	return key_ID;
 }
 
-void bout_database::get_list(vector<string> &list, string table, string first_cid, string last_cid, int Switch){
-	string sorder;
-	if(Switch == 1)
-		sorder = "select key_ID from " + table + " where '" + first_cid + "' < key_ID and key_ID< '" + last_cid + "' order by key_ID;";
-	else if(Switch == 0)
-		sorder = "select CID from " + table + " where '" + first_cid + "' <= CID and CID <= '" + last_cid + "' order by CID;";
-	else if(Switch == -1)
-		sorder = "select key_ID from " + table + " where '" + first_cid + "' < key_ID and key_ID < '" + last_cid + "' order by key_ID desc limit 1;";
-	else{
-		cout << "get_list() has something wrong" << endl;
-		exit(1);
-	}
-	char *order;
-	order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(conn, order);
-
-	while((row = mysql_fetch_row(res)) != NULL){
-		list.push_back(row[0]);
-	}
-}
-
 void bout_database::print_query(){
-	string sorder = "select * from " + table_name + ";";
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
+	string sorder = "select * from data_table;";
+	char *order = const_cast<char*>(sorder.c_str());
 	res = mysql_perform_query(conn, order);
 
 	while((row = mysql_fetch_row(res)) != NULL){

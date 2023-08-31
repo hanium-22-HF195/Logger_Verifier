@@ -13,16 +13,16 @@ SRCS			= server.cpp main_func.cpp
 ## 소스레벨의 라이브러리
 
 ## 인클루드 디렉토리
-DIR_INC			=
+DIR_INC			= 
 
-INCLUDEDIRS		+= -I.
-LIVDIRS			+= 
+INCLUDEDIRS		+= -I. -I/usr/local/opt/openssl@3/include
+LIVDIRS			+= -L /usr/local/opt/openssl@3/lib
 
 OBJS			= $(SRCS:.cpp=.o)
 
-CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient 
+CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient
 LDFLAGS			= $(LIVDIRS)
-LIBS			= -lpthread -lmysqlclient -ljsoncpp
+LIBS			= -lpthread -lmysqlclient -ljsoncpp -lssl -lcrypto -L /usr/local/opt/openssl/lib 
 
 #---------------------------------------------------------------------
 CC			= $(CROSS_PREFIX)-gcc
@@ -40,7 +40,10 @@ MV	= mv
 
 all : $(TARGET)
 	
+cp : 
+	cd ../command_parser; make obj; cp command_parser.o ../Server/command_parser.o
 
+ 
 $(TARGET) : $(OBJS)
 	cd ../command_parser; make obj; cp command_parser.o ../Server/command_parser.o
 	$(CXX) $(LDFLAGS) $(OBJS) command_parser.o -o $@ $(LIBS)

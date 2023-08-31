@@ -11,7 +11,6 @@ int fps;
 int frame_count;
 int SIGNED_HASH_BUFSIZE;
 //----------------------------------
-char* pubkeyfile_path;
 char* orifile_path;
 char* yfile_path;
 char* hashfile_path;
@@ -36,10 +35,6 @@ void Read_Logger_cfg(){
         fps = value["Logger"]["fps"].asInt();
         frame_count = value["Logger"]["frame count"].asInt();
         SIGNED_HASH_BUFSIZE = value["Logger"]["signed hash bufsize"].asInt();
-
-        str = value["Logger"]["public key path"].asString();
-        pubkeyfile_path = new char[str.length() + 1];
-        strcpy(pubkeyfile_path, str.c_str());
 
         str = value["Logger"]["original file path"].asString();
         orifile_path = new char[str.length() + 1];

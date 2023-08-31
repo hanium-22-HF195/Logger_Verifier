@@ -10,7 +10,7 @@ char *DB_IP;
 char *DB_user;
 char *DB_password;
 char *DB_database;
-char *image_dir;
+string image_dir;
 
 int CMD_HDR_SIZE_D;
 int Hash_size_D;
@@ -48,9 +48,7 @@ void Read_DB_cfg(){
                 DB_database = new char[raw_string.length() + 1];
                 strcpy(DB_database, raw_string.c_str());
 
-                raw_string = value["Database"]["storage dir"].asString();
-                image_dir = new char[raw_string.length() + 1];
-                strcpy(image_dir, raw_string.c_str());
+                image_dir = value["Database"]["storage dir"].asString();
 
                 CMD_HDR_SIZE_D = value["HeaderPacket"]["Command Header size"].asInt();
                 Hash_size_D = value["Default data size"]["Hash size"].asInt();

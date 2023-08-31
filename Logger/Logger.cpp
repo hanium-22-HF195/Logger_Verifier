@@ -595,7 +595,7 @@ int main(int, char **)
 
     while(true){
 
-        makePacket(Server, HI_I_M, 0xa0, 0x00);
+        makePacket(Server, TERM_SOCKET, 0xa0, 0x00);
         void *p_packet = &sendDataPacket;
 
         if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
