@@ -89,10 +89,14 @@ void pop_port(int ID);
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
+void generate_shares();
+
 NETWORK_CONTEXT getpnetwork();
 
 extern NETWORK_CONTEXT *g_pNetwork;
 extern HEADERPACKET sendDataPacket;
+extern EVP_CIPHER_CTX *en;
+extern EVP_CIPHER_CTX *de;
 
 #endif
 

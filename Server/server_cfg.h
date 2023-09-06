@@ -25,6 +25,8 @@ char* prikeyfile_path;
 
 // Symmetric key 
 string Symmetric_key;
+int num_of_share;
+int key_threshold;
 
 void Read_server_cfg(){
 	ifstream json_dir("../Sys_cfg.json");
@@ -36,31 +38,24 @@ void Read_server_cfg(){
 	bool ok = parseFromStream(builder, json_dir, &value, &errs);
 
 	if(ok == true){
-        string str;
     
-		SERVER_PORT = value["Server"]["Server Port"].asInt();
-        string raw_dir = value["Server"]["storage dir"].asString();
-        storage_dir = new char[raw_dir.length() + 1];
-        strcpy(storage_dir, raw_dir.c_str());
-        raw_dir = value["Server"]["c-sss dir"].asString();
+		SERVER_PORT     = value["Server"]["Server Port"].asInt();
+        storage_dir     = const_cast<char*>(value["Server"]["storage dir"].asString().c_str());
 
-        Hash_size = value["Server"]["Hash size"].asInt();
-        Signed_Hash_size = value["Server"]["Signed hash size"].asInt();
-        CID_size = value["Server"]["CID size"].asInt();
+        Hash_size       = value["Server"]["Hash size"].asInt();
+        Signed_Hash_size= value["Server"]["Signed hash size"].asInt();
+        CID_size        = value["Server"]["CID size"].asInt();
 
-        CMD_HDR_SIZE = value["HeaderPacket"]["Command Header size"].asInt();
-        ASYNC_BUFSIZE = value["HeaderPacket"]["ASYNC BUFSIZE"].asInt();
-        MAX_USER_CNT = value["HeaderPacket"]["Max User Count"].asInt();
+        CMD_HDR_SIZE    = value["HeaderPacket"]["Command Header size"].asInt();
+        ASYNC_BUFSIZE   = value["HeaderPacket"]["ASYNC BUFSIZE"].asInt();
+        MAX_USER_CNT    = value["HeaderPacket"]["Max User Count"].asInt();
 
-        str = value["Server"]["public key path"].asString();
-        pubkeyfile_path = new char[str.length() + 1];
-        strcpy(pubkeyfile_path, str.c_str());
+        pubkeyfile_path = const_cast<char*>(value["Server"]["public key path"].asString().c_str());
+        prikeyfile_path = const_cast<char*>(value["Server"]["private key path"].asString().c_str());
 
-        str = value["Server"]["private key path"].asString();
-        prikeyfile_path = new char[str.length() + 1];
-        strcpy(prikeyfile_path, str.c_str());
-
-        Symmetric_key = value["Server"]["Symmetric key seed"].asString();
+        Symmetric_key   = value["Server"]["Symmetric key seed"].asString();
+        num_of_share    = value["Server"]["Number of Share"].asInt();
+        key_threshold   = value["Server"]["Gen Key Threshold"].asInt();
 	}
 }
 

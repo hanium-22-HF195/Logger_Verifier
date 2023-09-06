@@ -6,10 +6,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "../DB/bout_database.h"
 #include "../openssl/sign.h"
-#include "../../c-sss/src/shamir.c"
-#include "../../c-sss/src/strtok.c"
+#include "../DB/bout_database.h"
 
 using namespace std;
 void mkdir_func(string str);
@@ -31,8 +29,8 @@ char* Hash = new char[Hash_size_D];
 char* Signed_Hash = new char[Signed_Hash_size_D];
 char* CID = new char[CID_size_D];
 FILE* file;
-
 bout_database bDB;
+
 string s_dir(image_dir);
 
 /*
@@ -262,15 +260,17 @@ int verify_request(HEADERPACKET* msg, IO_PORT *port){
 	// 	cout << "Something was wrong..." << endl;
 	// 	exit(1);
 	// }
+	return 1;
 }
 int verify_response(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int verify_to_prover(HEADERPACKET *msg, IO_PORT *port){
 	bDB.Prover_Switch = true;
+	return 1;
 }
 int prover_response(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 /*------------------------------------------------------------------------*/
 
@@ -278,31 +278,27 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 /*------------------------------------------------------------------------*/
 /* 																		  */
 int generate_aes(HEADERPACKET* msg, IO_PORT *port){
-	cout << "generate symmetric key" << endl;
-	string skey = "seed key";
+	// cout << "generate symmetric key" << endl;
+	// string skey = "seed key";
 
-    EVP_CIPHER_CTX *en = EVP_CIPHER_CTX_new();
-    EVP_CIPHER_CTX *de = EVP_CIPHER_CTX_new();
+    // EVP_CIPHER_CTX *en = EVP_CIPHER_CTX_new();
+    // EVP_CIPHER_CTX *de = EVP_CIPHER_CTX_new();
 
-	char *key_data = new char[skey.length() + 1];
-	strcpy(key_data, skey.c_str());
-	int key_data_len = skey.length() + 1;
+	// char *key_data = const_cast<char*>(skey.c_str());
+	// int key_data_len = skey.length() + 1;
 
-	unsigned char key[32], iv[32];
-	cout << key << endl;
+	// unsigned char key[32], iv[32];
+	// cout << key << endl;
+	// cout << iv << endl;
 
-	aes_init((unsigned char*)key_data, key_data_len, NULL, en, de, key, iv);
+	// aes_init((unsigned char*)key_data, key_data_len, NULL, en, de, key, iv);
+	// cout << "symmetric key generation complete" << endl;
 
-	string generated_date = getCID();
-	skey = static_cast<string>(reinterpret_cast<const char *>(key));    	//***check
+	// char *shares = generate_share_strings((char*)key, 3, 2);
+	// fprintf(stdout, "%s", shares);
 
-	bDB.insert_aes_key(generated_date, skey);
-	cout << "symmetric key generation complete" << endl;
-
-	char *shares = generate_share_strings((char*)key, 3, 2);
-	fprintf(stdout, "%s", shares);
-
-	free(shares);
+	// free(shares);
+	generate_shares();
 	const char *ptxt = "Hello world!";
 
 	int len = strlen(ptxt) + 1;;
@@ -317,34 +313,34 @@ int generate_aes(HEADERPACKET* msg, IO_PORT *port){
 }
 
 int generate_shares(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int share_request(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int share_response(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int another_share_request(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int another_share_response(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int generate_key_at_logger(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int encrypt_data_at_logger(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int encrypt_data_request(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int encrypt_data_response(HEADERPACKET* msg, IO_PORT *port){
-
+	return 1;
 }
 int decrypt_data_at_server(HEADERPACKET* msg, IO_PORT *port){
-	
+	return 1;
 }
 
 

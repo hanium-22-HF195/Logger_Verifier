@@ -122,13 +122,6 @@ void bout_database::insert_pk_database(string key_ID, string LID, char* key_valu
 	res = mysql_perform_query(conn, order);
 }
 
-void bout_database::insert_aes_key(string generated_date, string key){
-	string sorder = "INSERT INTO symmetric_key values(" + generated_date + ", " + key + ", 1);";
-	char *order = const_cast<char*>(sorder.c_str());
-	cout << order << endl;
-	res = mysql_perform_query(conn, order);
-}
-
 void bout_database::update_database(string field, string set, string table, string where = ""){
 	string sorder = "update " + field + 
 					" set " + set + 

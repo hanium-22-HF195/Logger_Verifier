@@ -69,6 +69,7 @@ clean:
 	rm -f $(DIR_FANET)*.o
 	rm -f $(OBJS)
 	rm -f $(TARGET) core
+	clear
 
 
 distclean: clean

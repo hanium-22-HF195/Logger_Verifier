@@ -10,7 +10,9 @@
         
         "public key path" : "/home/pi/2023_pro/pubkey.txt",
         "private key path" : "/home/pi/2023_pro/prikey.txt",
-        "Symmetric key seed" : "seed key"
+        "Symmetric key seed" : "seed key",
+        "Number of Share" : 10,
+        "Gen Key Threshold" : 5
     },
 
     "Client" :

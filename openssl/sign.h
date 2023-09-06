@@ -12,7 +12,7 @@
 
 using namespace std;
 
-typedef struct ENC_TYPE
+typedef struct
 {
 	int len_aad;
 	unsigned char *secret;
@@ -20,7 +20,7 @@ typedef struct ENC_TYPE
 	unsigned char *ciphertext;
 	int ciphertext_len;
 	unsigned char *tag;
-};
+}ENC_TYPE;
 
 RSA* createPrivateRSA(string key);
 RSA* createPublicRSA(string key);

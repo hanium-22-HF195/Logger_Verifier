@@ -1,4 +1,6 @@
 #include <iostream>
+#include <sstream>
+#include <vector>
 #include <fstream>
 #include <stdio.h>
 #include <string>
@@ -18,16 +20,48 @@
 #include "server.h"
 #include "tracex.h"
 #include "../openssl/sign.cpp"
+#include "../../c-sss/src/shamir.c"
+#include "../../c-sss/src/strtok.c"
 
 using namespace std;
 
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
+EVP_CIPHER_CTX *en;
+EVP_CIPHER_CTX *de;
 
 void closesocket(SOCKET sock_fd);
 
 void cp(string str){
 	cout << str << endl;
+}
+
+void generate_shares(){
+	en = EVP_CIPHER_CTX_new();
+	de = EVP_CIPHER_CTX_new();
+
+	char *key_data = const_cast<char*>(Symmetric_key.c_str());
+	int key_data_len = Symmetric_key.length() + 1;
+
+	unsigned char key[32], iv[32];
+	aes_init((unsigned char*)key_data, key_data_len, NULL, en, de, key, iv);
+
+	char *shares = generate_share_strings((char*)key, num_of_share, key_threshold);
+
+	istringstream c_shares;
+	c_shares.str(shares);
+	string substr;
+	vector<string> share;
+
+	while(getline(c_shares, substr, '\n')){
+		share.push_back(substr);
+	}
+
+	vector<string>::iterator iter;
+ 
+	for(iter=share.begin();iter != share.end();iter++){
+		cout << *iter << endl;
+	}
 }
 
 string getCID() {
