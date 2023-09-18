@@ -23,8 +23,6 @@ int MAX_USER_CNT;
 
 int command;
 
-#define ThisID Client
-
 #pragma comment(lib, "jsoncpp.lib")
 
 void Read_client_cfg(){

@@ -3,6 +3,9 @@
 #include <fstream>
 #include <jsoncpp/json/json.h>
 
+#pragma comment(lib, "jsoncpp.lib")
+using namespace std;
+
 #ifndef __DATABASE_CFG__
 #define __DATABASE_CFG__
 
@@ -16,10 +19,6 @@ int CMD_HDR_SIZE_D;
 int Hash_size_D;
 int Signed_Hash_size_D;
 int CID_size_D;
-
-#endif
-
-#pragma comment(lib, "jsoncpp.lib")
 
 void Read_DB_cfg(){
         ifstream json_dir("../Sys_cfg.json");
@@ -56,3 +55,5 @@ void Read_DB_cfg(){
                 CID_size_D = value["Default data size"]["CID size"].asInt();
         }
 }
+
+#endif

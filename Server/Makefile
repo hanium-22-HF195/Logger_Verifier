@@ -8,7 +8,7 @@ CP_DIR			= ./
 
 ## 사용자 소스
 TARGET			= serverTest
-SRCS			= server.cpp main_func.cpp
+SRCS			= ../command_parser/command_parser.cpp ../DB/bout_database.cpp server.cpp main_func.cpp
 #---------------------------------------------------------------------
 ## 소스레벨의 라이브러리
 
@@ -20,9 +20,9 @@ LIVDIRS			+= -L /usr/local/opt/openssl@3/lib
 
 OBJS			= $(SRCS:.cpp=.o)
 
-CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient
+CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -L/usr/local/opt/openssl/lib 
 LDFLAGS			= $(LIVDIRS)
-LIBS			= -lpthread -lmysqlclient -ljsoncpp -lssl -lcrypto -L /usr/local/opt/openssl/lib 
+LIBS			= -lpthread -lmysqlclient -ljsoncpp -lssl -lcrypto 
 
 #---------------------------------------------------------------------
 CC			= $(CROSS_PREFIX)-gcc
@@ -39,23 +39,20 @@ MV	= mv
 #--------------------------------------------------------------------
 
 all : $(TARGET)
-	
-cp : 
-	cd ../command_parser; make obj; cp command_parser.o ../Server/command_parser.o
-
  
 $(TARGET) : $(OBJS)
-	cd ../command_parser; make obj; cp command_parser.o ../Server/command_parser.o
-	$(CXX) $(LDFLAGS) $(OBJS) command_parser.o -o $@ $(LIBS)
+	
+	$(CXX) $(LDFLAGS) $(OBJS) -o $@ $(LIBS) -w
 	$(NM) $(TARGET) > $(TARGET).map
 	
 %.o:%.c
 	@echo "Compiling $< ..."
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $< -w
 
 %.o:%.cpp
 	@echo "C++ compiling $< ..."
-	$(CXX) -c $(CFLAGS) -o $@ $<
+	$(CXX) -c $(CFLAGS) -o $@ $< -w
+
 
 dep :
 	$(CXX)	-M	$(INCLUDEDIRS)	$(SRCS) > .depend

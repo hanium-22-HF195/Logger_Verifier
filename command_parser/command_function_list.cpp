@@ -6,8 +6,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "../openssl/sign.h"
-#include "../DB/bout_database.h"
+#define Hash_size_D 64
+#define Signed_Hash_size_D 350
+#define CID_size_D 23
 
 using namespace std;
 void mkdir_func(string str);
@@ -24,14 +25,7 @@ void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dat
 	for_res_packet.dataSize = dataSize;
 }
 
-void* recv_buf;
-char* Hash = new char[Hash_size_D];
-char* Signed_Hash = new char[Signed_Hash_size_D];
-char* CID = new char[CID_size_D];
-FILE* file;
-bout_database bDB;
-
-string s_dir(image_dir);
+string s_dir("/home/pi/images");
 
 /*
  dataType : 0xa0 = char
@@ -39,11 +33,10 @@ string s_dir(image_dir);
 			0xb0 = int
 			0xb1 = unsigned int
 */
-void reshape_buffer(int type, int datasize){
+void reshape_buffer(void* recv_buf, int type, int datasize){
 	switch(type){
 		case 0xa0 : case 0xc0 : 
-					recv_buf = (char *)recv_buf;
-					recv_buf = new char[datasize];
+					recv_buf = (char *)malloc(datasize);
 					break;
 		case 0xa1 : recv_buf = (unsigned char*)recv_buf;
 					recv_buf = new unsigned char[datasize];
@@ -55,11 +48,6 @@ void reshape_buffer(int type, int datasize){
 					recv_buf = new unsigned int[datasize];
 					break;
 	}
-}
-
-int term_socket(HEADERPACKET* msg, IO_PORT *port){
-	cout << "socket " << port->s << " terminated" << endl;
-	return 0;
 }
 
 /*------------------hi i am & nice to meet you----------------------------*/
@@ -80,38 +68,38 @@ int nice_to_meet_you(HEADERPACKET* msg, IO_PORT *port){
 
 /*------------------public key request & response----------------------------*/
 int public_key_request(HEADERPACKET* msg, IO_PORT *port){
-	reshape_buffer(msg->dataType, msg->dataSize);
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
 	
 	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
 
-	string key_ID = bDB.get_latest_key_ID();
-	
-	string filed = "key_ID";
-	string set = "key_status = 0";
-	string table = "public_keys";
-	string where = "key_ID = '" + key_ID +"'";
-	bDB.update_database(key_ID, set, table, where);
 
 	string pk((char*)recv_buf);
-	char *key_value = new char[pk.length() + 1];
-	strcpy(key_value, pk.c_str());
-	bDB.insert_pk_database(getCID(), 0,key_value);
+	char *key_value = const_cast<char*>(pk.c_str());
+
+	#ifdef THIS_IS_SERVER
+	insert_public_key(key_value);
+	#endif
+	free(recv_buf);
 
 	return 1;
 }
 int public_key_response(HEADERPACKET* msg, IO_PORT *port){
 	make_res_Packet(Logger, PUBKEY_RES, 0xa0, 0);
 	
-	return send_binary(port, CMD_HDR_SIZE_D, p_packet);
+	return send_binary(port, 8, p_packet);
 }
 /*------------------------------------------------------------------------*/
 
 /*-------------------video data send & response---------------------------*/
 int video_data_send(HEADERPACKET* msg, IO_PORT *port){
-	reshape_buffer(msg->dataType, msg->dataSize);
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
+	
+	char* Hash = new char[Hash_size_D];
+	char* Signed_Hash = new char[Signed_Hash_size_D];
+	char* CID = new char[CID_size_D];
 
 	memset(recv_buf, 0, msg->dataSize);
 	memset(CID, 0, CID_size_D);
@@ -146,10 +134,18 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
 	make_res_Packet(Logger, VIDEO_DATA_RES, 0, 0);
-	bDB.insert_video_data(CID, Hash, Signed_Hash);
+
+	#ifdef THIS_IS_SERVER
+	insert_video_data(CID, Hash, Signed_Hash);
+	#endif
 
 	fflush(file);
 	fclose(file);
+
+	free(recv_buf);
+	free(CID);
+	free(Hash);
+	free(Signed_Hash);
 
  	send_binary(port, sizeof(HEADERPACKET), p_packet);
 	
@@ -266,7 +262,6 @@ int verify_response(HEADERPACKET* msg, IO_PORT *port){
 	return 1;
 }
 int verify_to_prover(HEADERPACKET *msg, IO_PORT *port){
-	bDB.Prover_Switch = true;
 	return 1;
 }
 int prover_response(HEADERPACKET* msg, IO_PORT *port){
@@ -278,53 +273,91 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 /*------------------------------------------------------------------------*/
 /* 																		  */
 int generate_aes(HEADERPACKET* msg, IO_PORT *port){
-	// cout << "generate symmetric key" << endl;
-	// string skey = "seed key";
-
-    // EVP_CIPHER_CTX *en = EVP_CIPHER_CTX_new();
-    // EVP_CIPHER_CTX *de = EVP_CIPHER_CTX_new();
-
-	// char *key_data = const_cast<char*>(skey.c_str());
-	// int key_data_len = skey.length() + 1;
-
-	// unsigned char key[32], iv[32];
-	// cout << key << endl;
-	// cout << iv << endl;
-
-	// aes_init((unsigned char*)key_data, key_data_len, NULL, en, de, key, iv);
-	// cout << "symmetric key generation complete" << endl;
-
-	// char *shares = generate_share_strings((char*)key, 3, 2);
-	// fprintf(stdout, "%s", shares);
-
-	// free(shares);
+	#ifdef THIS_IS_SERVER
 	generate_shares();
-	const char *ptxt = "Hello world!";
+	#endif
 
-	int len = strlen(ptxt) + 1;;
-
-	unsigned char *ciphertext = aes_encrypt(en, (unsigned char *)ptxt, &len);
-	cout << "cipher text : " << ciphertext << endl;
-
-	unsigned char *plaintext = aes_decrypt(de, ciphertext, &len);
-	cout << "plain text : " << plaintext << endl;
-
-	return 1;
-}
-
-int generate_shares(HEADERPACKET* msg, IO_PORT *port){
 	return 1;
 }
 int share_request(HEADERPACKET* msg, IO_PORT *port){
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
+
+	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
+		return -1;
+	}
+
+	string LID((char*)recv_buf);
+	
+	cout << "LID : " <<  LID << endl;
+	string share;
+
+	share = get_share(LID);
+
+	cout << "**share : " << share << endl;
+	free(recv_buf);
+	char* c_share = const_cast<char*>(share.c_str());
+
+	make_res_Packet(Server, SHARE_RES, 0xa0, strlen(c_share));
+
+	if(!send_binary(port, sizeof(HEADERPACKET), p_packet)){
+		cout << "share request : send packet error!" << endl;
+	}
+	if(!send_binary(port, strlen(c_share), (void*)c_share)){
+		cout << "share request : send share error!" << endl;
+	}
+
 	return 1;
 }
 int share_response(HEADERPACKET* msg, IO_PORT *port){
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
+
+	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
+		return -1;
+	}
+
+	string share((char*)recv_buf);
+
+	cout << "received share : " << share << endl;
+
 	return 1;
 }
 int another_share_request(HEADERPACKET* msg, IO_PORT *port){
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
+
+	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
+		return -1;
+	}
+
+	string LID((char*)recv_buf);
+
+	vector<string> share = get_ano_shares(LID );
+
+	for(vector<string>::iterator iter=share.begin();iter != share.end();iter++){
+		cout << *iter << endl;
+	}
+	free(recv_buf);
+
+	for(auto i : share){
+		char *c_share = const_cast<char*>(i.c_str());
+		cout << "c_share : " << endl;
+		make_res_Packet(Server, ANO_SHARE_RES, 0xa0, strlen(c_share));
+
+		if(!send_binary(port, sizeof(HEADERPACKET), p_packet)){
+			cout << "share request : send packet error!" << endl;
+		}
+		if(!send_binary(port, strlen(c_share), (void*)c_share)){
+			cout << "share request : send share error!" << endl;
+		}
+	}
+
 	return 1;
 }
 int another_share_response(HEADERPACKET* msg, IO_PORT *port){
+	
+
 	return 1;
 }
 int generate_key_at_logger(HEADERPACKET* msg, IO_PORT *port){
@@ -349,19 +382,12 @@ int decrypt_data_at_server(HEADERPACKET* msg, IO_PORT *port){
 /*------------------------------------------------------------------------*/
 
 
-
-
-
-
-
-
-
 /*
  This function is for test. Receive data and write down .txt file. 
 */
 int test(HEADERPACKET* msg, IO_PORT *port){
 	FILE *file = fopen("test.txt", "wb");
-	reshape_buffer(msg->dataType, msg->dataSize);
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
 	
 	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
 		cout << "recv_binary fail" << endl;
@@ -372,6 +398,7 @@ int test(HEADERPACKET* msg, IO_PORT *port){
 	
 	fflush(file);
 	fclose(file);
+	free(recv_buf);
 
 	return 1;
 }

@@ -21,7 +21,6 @@
 
 /*-Communication function with API Server-*/
 #define GEN_AES         0x80
-#define GEN_SHARES      0x81
 #define SHARE_REQ       0x82
 #define SHARE_RES       0x83
 #define ANO_SHARE_REQ   0x84

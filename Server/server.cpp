@@ -22,46 +22,18 @@
 #include "../openssl/sign.cpp"
 #include "../../c-sss/src/shamir.c"
 #include "../../c-sss/src/strtok.c"
+#include "../DB/bout_database.h"
 
 using namespace std;
 
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
-EVP_CIPHER_CTX *en;
-EVP_CIPHER_CTX *de;
+bout_database DB(Server);
 
 void closesocket(SOCKET sock_fd);
 
 void cp(string str){
 	cout << str << endl;
-}
-
-void generate_shares(){
-	en = EVP_CIPHER_CTX_new();
-	de = EVP_CIPHER_CTX_new();
-
-	char *key_data = const_cast<char*>(Symmetric_key.c_str());
-	int key_data_len = Symmetric_key.length() + 1;
-
-	unsigned char key[32], iv[32];
-	aes_init((unsigned char*)key_data, key_data_len, NULL, en, de, key, iv);
-
-	char *shares = generate_share_strings((char*)key, num_of_share, key_threshold);
-
-	istringstream c_shares;
-	c_shares.str(shares);
-	string substr;
-	vector<string> share;
-
-	while(getline(c_shares, substr, '\n')){
-		share.push_back(substr);
-	}
-
-	vector<string>::iterator iter;
- 
-	for(iter=share.begin();iter != share.end();iter++){
-		cout << *iter << endl;
-	}
 }
 
 string getCID() {
@@ -91,6 +63,72 @@ string getCID() {
     }
     
     return s_CID;
+}
+
+void generate_shares(){
+	g_pNetwork->en = EVP_CIPHER_CTX_new();
+	g_pNetwork->de = EVP_CIPHER_CTX_new();
+
+	char *key_data = const_cast<char*>(Symmetric_key.c_str());
+	int key_data_len = Symmetric_key.length() + 1;
+
+	unsigned char key[32], iv[32];
+	aes_init((unsigned char*)key_data, key_data_len, NULL, g_pNetwork->en, g_pNetwork->de, key, iv);
+	ofstream ofs("symmetric_key", ios::out | ios::app);
+	if(ofs.fail()){
+		cerr << "Error!" << endl;
+	}
+	cout << "Success in generating AES" << endl;
+	char *shares = generate_share_strings((char*)key, num_of_share, key_threshold);
+
+	istringstream c_shares;
+	c_shares.str(shares);
+	string substr;
+	vector<string> share;
+
+	while(getline(c_shares, substr, '\n')){
+		share.push_back(substr);
+	}
+
+	vector<string>::iterator iter;
+ 
+	for(iter=share.begin();iter != share.end();iter++){
+		substr = "insert into shares value('" + *iter + "', '0');";
+		cout << "substr : " << substr << endl;
+		DB.insert_data(substr);
+	}
+}
+
+string get_share(string LID){
+	string share = DB.get_share(LID);
+
+	return share;
+}
+
+vector<string> get_ano_shares(string LID){
+	vector<string> share = DB.get_ano_shares(LID, key_threshold - 1);
+
+	return share;
+}
+
+void encrypt_data(char* data){
+
+}
+
+void insert_public_key(char *pubkey){
+	string key_ID = DB.get_latest_key_ID();
+	
+	string filed = "key_ID";
+	string set = "key_status = 0";
+	string table = "public_keys";
+	string where = "key_ID = '" + key_ID +"'";
+	DB.update_database(set, table, where);
+
+	DB.insert_pk_database(getCID(), 0, pubkey);
+}
+
+void insert_video_data(char* CID, char* Hash, char* Signed_Hash){
+	DB.insert_video_data(CID, Hash, Signed_Hash);
 }
 
 void insert_port(int ID, int port){
@@ -364,13 +402,11 @@ static void *ClientServiceThread(void *arg)
 			}
 		}
 		retry_cnt = 5;
-		res = cmd_parser(*clientThd, (HEADERPACKET *)buf);
-		if(res == -1) {
+		if(cmd_parser(*clientThd, (HEADERPACKET *)buf) == -1) {
 			cout << "cmd_parser return -1" << endl;
 			TRACE_ERR("Data is sent with wrong destination : connected socket (%s)\n", fd_socket);
 			continue;
 		}
-		else if(res == 0) break;
 		else{
 			send_retry_cnt--;
 			if(send_retry_cnt == 0) {

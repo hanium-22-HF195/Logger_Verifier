@@ -8,12 +8,22 @@ int main(){
         cout << "init client error!!" << endl;
         return -1;
     }
+    char* LID = "Testing LID";
 
-    makePacket(Server, command, 0x00, 0);
+    makePacket(Server, command, 0xa0, strlen(LID));
     void *p_packet = &sendDataPacket;
 
     if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
     {
         cout << "packet send Error!!" << endl;
+    }
+
+    if (!send_binary(&g_pNetwork->port, strlen(LID), (void *)LID))
+    {
+        cout << "packet send Error!!" << endl;
+    }
+    
+    while(1){
+        sleep(10);
     }
 }

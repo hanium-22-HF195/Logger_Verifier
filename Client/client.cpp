@@ -212,8 +212,9 @@ int recv_binary( IO_PORT *p, long size, void *pdata )
 	return TRUE;
 }
 
-int ClientServiceThread(void *arg)
+static void *ClientServiceThread(void *arg)
 {
+	cout << "ClientServiceThread start" << endl;
 	IO_PORT *clientThd = (IO_PORT*) arg;
 	uint8_t res;
 	uint32_t fd_max;
@@ -224,6 +225,8 @@ int ClientServiceThread(void *arg)
 	fd_set  reads;
 	uint8_t buf[CMD_HDR_SIZE];
 	uint8_t cmd[100]={0,};
+
+	pthread_detach(pthread_self());
 
 	if(arg == NULL){
 		TRACE_ERR( "arg == NULL\n" );
@@ -245,16 +248,17 @@ int ClientServiceThread(void *arg)
 
 		//make HEADERPACKET
 
-		// res = select( fd_max, &reads, NULL, NULL, &tv );
-		// if( res == -1 ) {
-		// 	TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
-		// 	usleep(10000);
-		// 	continue;
-		// }
-		// else if( res == 0 ) {
-		// 	TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
-		// 	goto SERVICE_DONE;
-		// }
+		res = select( fd_max, &reads, NULL, NULL, &tv );
+		if( res == -1 ) {
+			TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
+			usleep(10000);
+			continue;
+		}
+		else if( res == 0 ) {
+			TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
+			goto SERVICE_DONE;
+		}
+
 		while(retry_cnt >= 0) {
 			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
 			if(res <= 0 ) {
@@ -271,7 +275,6 @@ int ClientServiceThread(void *arg)
 		if(cmd_parser(*clientThd, (HEADERPACKET *)buf) == -1) {
 			cout << "cmd_parser return -1" << endl;
 			TRACE_ERR("Data is sent with wrong destination : connected socket (%s)\n", fd_socket);
-			return -1;
 		}
 		else{
 			send_retry_cnt--;
@@ -284,15 +287,14 @@ int ClientServiceThread(void *arg)
 			// 	usleep(10000);
 			// 	continue;
 			// }
-			return 1;
 		}
+		
 		send_retry_cnt = 5;
 
 		usleep(10000);
 	}
 SERVICE_DONE:
 	termClient();
-	return 1;
 }
 
 SOCKET create_socket()
@@ -319,6 +321,7 @@ int initClient()
 {
 	cout << "----Client Initializing----" << endl;
 	Read_client_cfg();
+	int res;
 
 	g_pNetwork = (NETWORK_CONTEXT*) malloc(sizeof(NETWORK_CONTEXT));
 	g_pNetwork->m_socket = create_socket();
@@ -338,6 +341,10 @@ int initClient()
 		return -1;
 	}
 
+	res = pthread_create(&g_pNetwork->clientThread, NULL, ClientServiceThread, (void*)&g_pNetwork->port);
+	if (res !=0 ){
+		TRACE_ERR( "ERROR create ptt client service thread\n" );
+	}
 	cout << "----Initializing END----" << endl << endl;
 
 	return TRUE;

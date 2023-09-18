@@ -61,34 +61,34 @@ char* genPublicRSA(RSA * rsa) {
   return pub_pkey;
 }
 
-int key_generation() //PKI
-{
-    cout << "----Key Geneartion----" << endl;
-    RSA *privateRSA = genPrivateRSA();
-    publicKey = genPublicRSA(privateRSA);
+// int key_generation() //PKI
+// {
+//     cout << "----Key Geneartion----" << endl;
+//     RSA *privateRSA = genPrivateRSA();
+//     publicKey = genPublicRSA(privateRSA);
 
-    cout << "public Key = " << endl
-         << publicKey << endl;
-    cout << "private key = " << endl
-         << privateKey;
+//     cout << "public Key = " << endl
+//          << publicKey << endl;
+//     cout << "private key = " << endl
+//          << privateKey;
 
-  //   fstream pubkey_file(pubkeyfile_path , ios::trunc | ios::out);
-  //       if(pubkey_file.is_open()){
-	// 		cout << "write public key" << endl;
-  //           pubkey_file << publicKey;
-  //       }   
+//     fstream pubkey_file(pubkeyfile_path , ios::trunc | ios::out);
+//         if(pubkey_file.is_open()){
+// 			cout << "write public key" << endl;
+//             pubkey_file << publicKey;
+//         }   
 
-  //       pubkey_file.close();
+//         pubkey_file.close();
 
-	// fstream prikey_file(prikeyfile_path , ios::trunc | ios::out);
-  //       if(prikey_file.is_open()){
-	// 		cout << "write private key" << endl;
-  //           prikey_file << privateKey;
-  //       }   
+// 	fstream prikey_file(prikeyfile_path , ios::trunc | ios::out);
+//         if(prikey_file.is_open()){
+// 			cout << "write private key" << endl;
+//             prikey_file << privateKey;
+//         }   
 
-  //       prikey_file.close();
-    return 0;
-}
+//         prikey_file.close();
+//     return 0;
+// }
 
 /**
  * Create a 256 bit key and IV using the supplied key_data. salt can be added for taste.

@@ -14,6 +14,7 @@ int SIGNED_HASH_BUFSIZE;
 char* orifile_path;
 char* yfile_path;
 char* hashfile_path;
+char* pubkeyfile_path;
 //----------------------------------
 #define ThisID Logger
 
@@ -37,16 +38,16 @@ void Read_Logger_cfg(){
         SIGNED_HASH_BUFSIZE = value["Logger"]["signed hash bufsize"].asInt();
 
         str = value["Logger"]["original file path"].asString();
-        orifile_path = new char[str.length() + 1];
-        strcpy(orifile_path, str.c_str());
+        orifile_path = const_cast<char*>(str.c_str());
 
         str = value["Logger"]["Y frame file path"].asString();
-        yfile_path = new char[str.length() + 1];
-        strcpy(yfile_path, str.c_str());
+        yfile_path = const_cast<char*>(str.c_str());
 
         str = value["Logger"]["hash file path"].asString();
-        hashfile_path = new char[str.length() + 1];
-        strcpy(hashfile_path, str.c_str());
+        hashfile_path = const_cast<char*>(str.c_str());
+
+        str = value["Logger"]["Public key file path"].asString();
+        pubkeyfile_path = const_cast<char*>(str.c_str());
 	}
 }
 

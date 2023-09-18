@@ -26,12 +26,10 @@ int verify_response(HEADERPACKET* msg, IO_PORT *port);
 int verify_to_prover(HEADERPACKET* msg, IO_PORT *port);
 int prover_response(HEADERPACKET* msg, IO_PORT *port);
 
-int term_socket(HEADERPACKET* msg, IO_PORT *port);				//STILL_ALIVE
 int hi_i_am(HEADERPACKET* msg, IO_PORT *port);					//HI_I_M
 int nice_to_meet_you(HEADERPACKET* msg, IO_PORT *port);			//NICE_2_MEET_U
 
 int generate_aes(HEADERPACKET* msg, IO_PORT *port);
-int generate_shares(HEADERPACKET* msg, IO_PORT *port);
 int share_request(HEADERPACKET* msg, IO_PORT *port);
 int share_response(HEADERPACKET* msg, IO_PORT *port);
 int another_share_request(HEADERPACKET* msg, IO_PORT *port);

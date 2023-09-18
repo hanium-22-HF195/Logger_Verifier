@@ -17,7 +17,7 @@
 
     "Client" :
     {
-        "Server IP addr" : "192.168.219.155",
+        "Server IP addr" : "192.168.219.111",
         "Server port" : 8700,
 
         "Hash size" : 64,
@@ -60,6 +60,14 @@
         "Signed hash size" : 350,
         "CID size" : 23
     },
+    
+    "Client Testing":
+    {
+        "command for test" : 130,
+        "data type for test" : 160,
+        "data size for test" : 1
+    },
 
-    "command for test" : 128
+    "command for test" : 132
+    
 }

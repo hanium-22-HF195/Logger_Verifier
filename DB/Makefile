@@ -7,8 +7,8 @@ CROSS_PREFIX		=
 CP_DIR			= ./
 
 ## 사용자 소스
-TARGET			= command_parser
-SRCS			= ../DB/bout_database.cpp command_parser.cpp 
+TARGET			= bout_database
+SRCS			= Database_cfg.cpp bout_database.cpp 
 #---------------------------------------------------------------------
 ## 소스레벨의 라이브러리
 
@@ -19,11 +19,10 @@ INCLUDEDIRS		+= -I.
 LIVDIRS			+= 
 
 OBJS			= $(SRCS:.cpp=.o)
-DB_SRC = ../DB/bout_database.cpp
 
 CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql 
 LDFLAGS			= $(LIVDIRS)
-LIBS			= -lpthread -lmysqlclient -ljsoncpp
+LIBS			= -lmysqlclient
 
 #---------------------------------------------------------------------
 CC			= $(CROSS_PREFIX)-gcc

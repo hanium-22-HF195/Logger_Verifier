@@ -20,12 +20,10 @@ cmdp_desp parser_desp[] =
 	{VER_2_PROV					, verify_to_prover		},
 	{PROV_RES					, prover_response		},
 	
-	{TERM_SOCKET				, term_socket			},
 	{HI_I_M						, hi_i_am				},
 	{NICE_2_MEET_U				, nice_to_meet_you		},
 
 	{GEN_AES					, generate_aes			},
-	{GEN_SHARES					, generate_shares		},
 	{SHARE_REQ					, share_request			},
 	{SHARE_RES					, share_response		},
 	{ANO_SHARE_REQ				, another_share_request	},
@@ -70,7 +68,7 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 			ack = parser_desp[i].callback(pmsg, &port);
 		}
 	}
-
+	cout << "ack : " << ack << endl;
 	switch(ack){
 		case -3 : cout << "Somethings Wrong... callback function doesn't work";
 				  return -1;

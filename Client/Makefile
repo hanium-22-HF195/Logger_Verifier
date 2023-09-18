@@ -22,7 +22,7 @@ $(TARGET): $(OBJS)
 
 %.o:%.cpp
 	@echo "C++ compiling $< ..."
-	$(CXX) -nostartfiles -c $(CFLAGS) -o $@ $<
+	$(CXX) -nostartfiles -w -c $(CFLAGS) -o $@ $<
 
 clean:
 	cd ../command_parser; make clean

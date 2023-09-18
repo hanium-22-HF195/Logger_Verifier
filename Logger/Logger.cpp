@@ -560,12 +560,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
             cout << "Image send Error!!" << endl;
         }
 
-        if (ClientServiceThread((void *)&g_pNetwork->port) == -1)
-        {
-            cout << "ClientServerThread return -1!!" << endl;
-            exit(0);
-        }
-
+        ClientServiceThread((void *)&g_pNetwork->port);
         yuv_send.pop();
         hash_send.pop();
         signed_hash_send.pop();
