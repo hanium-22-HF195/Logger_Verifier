@@ -80,7 +80,7 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 	char *key_value = const_cast<char*>(pk.c_str());
 
 	#ifdef THIS_IS_SERVER
-	insert_public_key(key_value);
+	insert_public_key(key_value); // key 입력 후 key id를 logger에 전달하는 형식 추가 필요
 	#endif
 	free(recv_buf);
 
@@ -333,7 +333,7 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 
 	string LID((char*)recv_buf);
 
-	vector<string> share = get_ano_shares(LID );
+	vector<string> share = get_ano_shares(LID);
 
 	for(vector<string>::iterator iter=share.begin();iter != share.end();iter++){
 		cout << *iter << endl;
@@ -356,7 +356,20 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 	return 1;
 }
 int another_share_response(HEADERPACKET* msg, IO_PORT *port){
-	
+	vector<string> ano_shares;
+
+	for(int i = 0; i < key_threshold - 1; i ++){
+		unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
+		if(recv_binary(port, msg->dataSize, recv_buf) == 0){
+			cout << "recv_binary fail" << endl;
+			return -1;
+		}
+
+		string share((char*)recv_buf);
+		ano_shares.push_back(share);
+	}
+
+	// generate_symmetric_key(share);
 
 	return 1;
 }
