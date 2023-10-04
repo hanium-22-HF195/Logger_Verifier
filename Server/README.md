@@ -1,6 +1,6 @@
-#1. install mariaDB and create tables
+# 1. install mariaDB and create tables
 
-   #install mariaDB
+   # install mariaDB
    ```
    install default-libmysqlclient-dev
    ```
@@ -10,9 +10,9 @@
    create table public_key(key_ID varchar(24), key_value varchar(450), key_status int);
    ```
    
-#2. install jsoncpp to read json file
+# 2. install jsoncpp to read json file
 
-   #install jsoncpp 
+   # install jsoncpp 
    ```
    sudo apt-get install libjsoncpp-dev
    ```
