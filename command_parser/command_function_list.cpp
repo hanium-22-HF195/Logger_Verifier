@@ -10,6 +10,7 @@
 #define Signed_Hash_size_D 350
 #define CID_size_D 23
 
+// #define logger
 using namespace std;
 void mkdir_func(string str);
 
@@ -25,7 +26,7 @@ void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dat
 	for_res_packet.dataSize = dataSize;
 }
 
-string s_dir("/home/pi/images");
+string s_dir("/home/cloud9/images");
 
 /*
  dataType : 0xa0 = char
@@ -77,11 +78,9 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 
 
 	string pk((char*)recv_buf);
-	char *key_value = const_cast<char*>(pk.c_str());
 
-	#ifdef THIS_IS_SERVER
-	insert_public_key(key_value); // key 입력 후 key id를 logger에 전달하는 형식 추가 필요
-	#endif
+	insert_public_key(pk); // key 입력 후 key id를 logger에 전달하는 형식 추가 필요
+
 	free(recv_buf);
 
 	return 1;
@@ -273,7 +272,7 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 /*------------------------------------------------------------------------*/
 /* 																		  */
 int generate_aes(HEADERPACKET* msg, IO_PORT *port){
-	#ifdef THIS_IS_SERVER
+	#ifdef logger
 	generate_shares();
 	#endif
 
@@ -290,9 +289,12 @@ int share_request(HEADERPACKET* msg, IO_PORT *port){
 	string LID((char*)recv_buf);
 	
 	cout << "LID : " <<  LID << endl;
+
 	string share;
 
+	#ifdef logger
 	share = get_share(LID);
+	#endif
 
 	cout << "**share : " << share << endl;
 	free(recv_buf);
@@ -330,9 +332,8 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-
+	#ifdef logger
 	string LID((char*)recv_buf);
-
 	vector<string> share = get_ano_shares(LID);
 
 	for(vector<string>::iterator iter=share.begin();iter != share.end();iter++){
@@ -352,13 +353,13 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 			cout << "share request : send share error!" << endl;
 		}
 	}
-
+	#endif
 	return 1;
 }
 int another_share_response(HEADERPACKET* msg, IO_PORT *port){
 	vector<string> ano_shares;
 
-	for(int i = 0; i < key_threshold - 1; i ++){
+	for(int i = 0; i < 5 - 1; i ++){
 		unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
 		if(recv_binary(port, msg->dataSize, recv_buf) == 0){
 			cout << "recv_binary fail" << endl;

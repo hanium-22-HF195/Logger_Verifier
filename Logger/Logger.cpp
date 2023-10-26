@@ -579,7 +579,7 @@ int main(int, char **)
     Read_Logger_cfg();
     
     // key GEN
-    //key_generation();
+    key_generation();
 
     // Init Client
     if (!initClient())
@@ -588,17 +588,17 @@ int main(int, char **)
         return -1;
     }
 
-    while(true){
+    // while(true){
 
-        makePacket(Server, TERM_SOCKET, 0xa0, 0x00);
-        void *p_packet = &sendDataPacket;
+    //     makePacket(Server, TERM_SOCKET, 0xa0, 0x00);
+    //     void *p_packet = &sendDataPacket;
 
-        if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
-        {
-            cout << "PubKey send Error!!" << endl;
-        }
-        return 0;
-    }
+    //     if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
+    //     {
+    //         cout << "PubKey send Error!!" << endl;
+    //     }
+    //     return 0;
+    // }
 
     send_pubKey_to_server();
     

@@ -79,7 +79,7 @@ void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
 void generate_shares();
-void insert_public_key(char *pubkey);
+void insert_public_key(string pubkey);
 void insert_video_data(char* CID, char* Hash, char* Signed_Hash);
 string get_share(string LID);
 vector<string> get_ano_shares(string LID);

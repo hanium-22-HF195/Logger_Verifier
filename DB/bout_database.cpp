@@ -89,8 +89,8 @@ void bout_database::insert_video_data(char* CID, char* Hash, char* Signed_Hash){
 	res = mysql_perform_query(conn, order);
 } //** table name이 고정된 상태. command function 내에서 자체적으로 쿼리 작성 후 수행해도 상관없을듯 함
 
-void bout_database::insert_pk_database(string key_ID, string LID, char* key_value){
-	string sorder = "INSERT INTO public_keys values('" + key_ID + "', '" + key_value + ", 1, " + LID + ");";
+void bout_database::insert_pk_database(string key_ID, string key_value){
+	string sorder = "INSERT INTO Loggers values(0, '" + key_value + "', '" + key_ID + "');";
 	char *order = const_cast<char*>(sorder.c_str());
 	res = mysql_perform_query(conn, order);
 }
@@ -104,10 +104,6 @@ void bout_database::update_database(string set, string table, string where = "")
 	cout << "update query : " << sorder << endl;
 	res = mysql_perform_query(conn, order);
 	cout << endl << "---------------------------------------------------" << endl;
-	while((row = mysql_fetch_row(res)) != NULL){
-		string x = row[0];
-		cout << x << endl;
-	}
 }
 
 string bout_database::get_latest_key_ID(){

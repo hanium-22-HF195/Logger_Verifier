@@ -2,14 +2,14 @@
     "Server" :
     {
         "Server Port" : 8700,
-        "storage dir" : "/home/pi/images/",
+        "storage dir" : "/home/cloud9/images/",
 
         "Hash size" : 64,
         "Signed hash size" : 350,
         "CID size" : 23,
         
-        "public key path" : "/home/pi/2023_pro/pubkey.txt",
-        "private key path" : "/home/pi/2023_pro/prikey.txt",
+        "public key path" : "/home/cloud9/2023_pro/pubkey.txt",
+        "private key path" : "/home/cloud9/2023_pro/prikey.txt",
         "Symmetric key seed" : "seed key",
         "Number of Share" : 10,
         "Gen Key Threshold" : 5
@@ -17,7 +17,7 @@
 
     "Client" :
     {
-        "Server IP addr" : "192.168.219.111",
+        "Server IP addr" : "192.168.0.139",
         "Server port" : 8700,
 
         "Hash size" : 64,
@@ -33,9 +33,9 @@
         "frame count" : 10,
         "signed hash bufsize" : 350,
 
-        "Y frame file path" : "/home/pi/Web-UI/static/images/L_Y_frame.png",
-        "hash file path" : "/home/pi/Web-UI/static/hash.txt",
-        "original file path" : "/home/pi/Web-UI/static/images/L_original.png"
+        "Y frame file path" : "/home/cloud9/Web-UI/static/images/L_Y_frame.png",
+        "hash file path" : "/home/cloud9/Web-UI/static/hash.txt",
+        "original file path" : "/home/cloud9/Web-UI/static/images/L_original.png"
     },
 
     "HeaderPacket" :
@@ -51,7 +51,7 @@
         "DB user" : "hanium",
         "DB password" : "1234",
         "DB database" : "hanium",
-        "storage dir" : "/home/pi/images/"
+        "storage dir" : "/home/cloud9/images/"
     }, 
 
     "Default data size" :

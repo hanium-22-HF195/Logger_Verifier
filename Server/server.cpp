@@ -20,8 +20,8 @@
 #include "server.h"
 #include "tracex.h"
 #include "../openssl/sign.cpp"
-#include "../../c-sss/src/shamir.c"
-#include "../../c-sss/src/strtok.c"
+#include "../c-sss/src/shamir.c"
+#include "../c-sss/src/strtok.c"
 #include "../DB/bout_database.h"
 
 using namespace std;
@@ -115,16 +115,8 @@ void encrypt_data(char* data){
 
 }
 
-void insert_public_key(char *pubkey){
-	string key_ID = DB.get_latest_key_ID();
-	
-	string filed = "key_ID";
-	string set = "key_status = 0";
-	string table = "public_keys";
-	string where = "key_ID = '" + key_ID +"'";
-	DB.update_database(set, table, where);
-
-	DB.insert_pk_database(getCID(), 0, pubkey);
+void insert_public_key(string pubkey){
+	DB.insert_pk_database(getCID(), pubkey);
 }
 
 void insert_video_data(char* CID, char* Hash, char* Signed_Hash){

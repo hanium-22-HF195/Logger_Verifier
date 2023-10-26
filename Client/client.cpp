@@ -14,6 +14,7 @@
 #include <map>
 #include <mutex>
 #include <thread>
+#include <sstream>
 
 #define THIS_IS_CLIENT
 
