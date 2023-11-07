@@ -2,7 +2,7 @@
 # falinux 라이블러리를 사용하는 어플용 Makefile
 #
 
-CROSS_PREFIX		= 
+CROSS_PREFIX	= 
 
 CP_DIR			= ./
 

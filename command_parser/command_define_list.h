@@ -30,10 +30,16 @@
 #define ENC_DATA_REQ    0x88
 #define ENC_DATA_RES    0x89
 #define DEC_DATA_SER    0x90
-/*----------------------------------------*/
+/*---------This function is for Testing--------------*/
 
 #define HI_I_M          0x09
 #define NICE_2_MEET_U   0xf9
 
 #define TERM_SOCKET     0xee
 #define TEST_CMD        0xff
+
+
+#define TEST_GEN_SHARES 0xe0
+#define GEN_SHARE_RES   0xe1
+#define TEST_SHARE_REQ  0xe2
+#define TEST_SHARE_RES  0xe3

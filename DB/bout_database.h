@@ -25,7 +25,6 @@ class bout_database{
 private:
 	struct db_user mysqlID;
 	MYSQL *conn;
-	MYSQL_RES *res;
 	MYSQL_ROW row;
 
 public:
@@ -37,7 +36,7 @@ public:
 	~bout_database();
 	void select_database(char* order, string &CID, string &HASH, string &SIGNED_HASH);
 	void insert_video_data(char* CID, char* Hash, char* Signed_Hash);
-	void insert_pk_database(string key_ID, string LID, char* key_value);
+	string insert_pk_database(string key_ID, string key_value);
 	void insert_aes_key(string generated_date, string key);
 	string get_latest_key_ID();
 	MYSQL* mysql_connection_setup(struct db_user sql_user);

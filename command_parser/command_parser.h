@@ -41,4 +41,8 @@ int encrypt_data_response(HEADERPACKET* msg, IO_PORT *port);
 int decrypt_data_at_server(HEADERPACKET* msg, IO_PORT *port);
 
 int test(HEADERPACKET* msg, IO_PORT *port);						//TEST_CMD
+int test_gen_shares(HEADERPACKET* msg, IO_PORT *port);
+int gen_share_res(HEADERPACKET* msg, IO_PORT *port);
+int test_share_req(HEADERPACKET* msg, IO_PORT *port);
+int test_share_res(HEADERPACKET* msg, IO_PORT *port);
 #endif

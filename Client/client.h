@@ -77,6 +77,7 @@ typedef struct
 }NETWORK_CONTEXT;
 
 int initClient();
+int test_initClient();
 void termClient();
 void closesocket(SOCKET sock_fd);
 

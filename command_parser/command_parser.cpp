@@ -36,6 +36,10 @@ cmdp_desp parser_desp[] =
 
 	// Testing command
 	{TEST_CMD					, test					},
+	{TEST_GEN_SHARES			, test_gen_shares		},
+	{GEN_SHARE_RES				, gen_share_res			},
+	{TEST_SHARE_REQ				, test_share_req		},
+	{TEST_SHARE_RES				, test_share_res		},
 };
 
 //-----------------------------------------------------------------------------
@@ -57,10 +61,10 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	cout << "Data Size : "<< dec << (int)pmsg->dataSize << endl;
 	cout << "---------------------------------" << endl;
 
-	if(pmsg->destID != ThisID){
-		cout << port.s << " " << endl;
-		return -1; //"HEADERPACKET' destID != ThisID";
-	}
+	// if(pmsg->destID != ThisID){
+	// 	cout << "Wrong destination! >> " << port.s << " ThisID : " << ThisID;
+	// 	return -1; //"HEADERPACKET' destID != ThisID";
+	// }
 
 	for (i = 0, ack = -3; i < len; i++){
 		if(ack == 1 || ack == 0) break;

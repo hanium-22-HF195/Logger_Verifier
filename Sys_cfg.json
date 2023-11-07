@@ -1,73 +1,68 @@
 {
     "Server" :
     {
-        "Server Port" : 8700,
-        "storage dir" : "/home/pi/images/",
+        "Server Port"           : 8700,
+        "storage dir"           : "/home/test/images/",
 
-        "Hash size" : 64,
-        "Signed hash size" : 350,
-        "CID size" : 23,
+        "Hash size"             : 64,
+        "Signed hash size"      : 350,
+        "CID size"              : 23,
         
-        "public key path" : "/home/pi/2023_pro/pubkey.txt",
-        "private key path" : "/home/pi/2023_pro/prikey.txt",
-        "Symmetric key seed" : "seed key",
-        "Number of Share" : 10,
-        "Gen Key Threshold" : 5
+        "public key path"       : "/home/test/2023_pro/pubkey.txt",
+        "private key path"      : "/home/test/2023_pro/prikey.txt",
+        "Password"              : "This is password",
+        "Number of Share"       : 10,
+        "Gen Key Threshold"     : 5,
+
+        "Salt"                  : "This is Salt"
     },
 
     "Client" :
     {
-        "Server IP addr" : "192.168.219.111",
-        "Server port" : 8700,
+        "Server IP addr"        : "127.0.0.1",
+        "Server port"           : 8700,
 
-        "Hash size" : 64,
-        "Signed hash size" : 350,
-        "CID size" : 23
+        "Hash size"             : 64,
+        "Signed hash size"      : 350,
+        "CID size"              : 23
     },
 
     "Logger" :
     {
-        "width" : 640,
-        "height" : 480,
-        "fps" : 10,
-        "frame count" : 10,
-        "signed hash bufsize" : 350,
+        "width"                 : 640,
+        "height"                : 480,
+        "fps"                   : 10,
+        "frame count"           : 10,
+        "signed hash bufsize"   : 350,
 
-        "Y frame file path" : "/home/pi/Web-UI/static/images/L_Y_frame.png",
-        "hash file path" : "/home/pi/Web-UI/static/hash.txt",
-        "original file path" : "/home/pi/Web-UI/static/images/L_original.png"
+        "Y frame file path"     : "/home/pi/Web-UI/static/images/L_Y_frame.png",
+        "hash file path"        : "/home/pi/Web-UI/static/hash.txt",
+        "original file path"    : "/home/pi/Web-UI/static/images/L_original.png"
     },
 
     "HeaderPacket" :
     {
-        "Command Header size" : 8,
-        "ASYNC BUFSIZE" : 4096,
-        "Max User Count" : 5
+        "Command Header size"   : 8,
+        "ASYNC BUFSIZE"         : 4096,
+        "Max User Count"        : 5
     },
 
     "Database" :
     {
-        "DB IP" : "127.0.0.1",
-        "DB user" : "hanium",
-        "DB password" : "1234",
-        "DB database" : "hanium",
-        "storage dir" : "/home/pi/images/"
+        "DB IP"                 : "127.0.0.1",
+        "DB user"               : "hanium",
+        "DB password"           : "1234",
+        "DB database"           : "hanium",
+        "storage dir"           : "/home/test/images/"
     }, 
 
     "Default data size" :
     {
-        "Hash size" : 64,
-        "Signed hash size" : 350,
-        "CID size" : 23
-    },
-    
-    "Client Testing":
-    {
-        "command for test" : 130,
-        "data type for test" : 160,
-        "data size for test" : 1
+        "Hash size"             : 64,
+        "Signed hash size"      : 350,
+        "CID size"              : 23
     },
 
-    "command for test" : 132
+    "command for test"          : 128
     
 }

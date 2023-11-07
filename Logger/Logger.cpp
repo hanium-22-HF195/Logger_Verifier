@@ -14,6 +14,8 @@
 #include <time.h>
 #include <sys/timeb.h>
 #include <fstream>
+#include <map>
+#include <vector>
 
 #include "logger_cfg.h"
 #include "Logger_function_list.h"
@@ -25,6 +27,7 @@
 
 using namespace std;
 using namespace cv;
+#define ThisID Logger
 
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
@@ -560,7 +563,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
             cout << "Image send Error!!" << endl;
         }
 
-        ClientServiceThread((void *)&g_pNetwork->port);
+        //ClientServiceThread((void *)&g_pNetwork->port);
         yuv_send.pop();
         hash_send.pop();
         signed_hash_send.pop();
@@ -574,6 +577,69 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
     cout << "----SEND END----------------" << endl;
 }
 
+void gen_shares(int num_of_share, int threshold){
+    string sShare = to_string(num_of_share);
+    string sThreshold = to_string(threshold);
+
+    string sNum = sShare + sThreshold;
+    char* Num = const_cast<char*>(sNum.c_str());
+
+    makePacket(Server, TEST_GEN_SHARES, 0xa0, strlen(Num));
+    void *p_packet = &sendDataPacket;
+
+    if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
+    {
+        cout << "PubKey send Error!!" << endl;
+    }
+
+    if (!send_binary(&g_pNetwork->port, strlen(Num), (void *)Num))
+    {
+        cout << "PubKey send Error!!" << endl;
+    }
+}
+
+string test_share_req(){
+    makePacket(Server, TEST_SHARE_REQ, 0xa0, 0);
+    void *p_packet = &sendDataPacket;
+    if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
+    {
+        cout << "test share req() Error" << endl;
+    }
+
+    uint8_t buf[CMD_HDR_SIZE];
+    memset(buf, 0, sizeof(buf));
+    void* port = (void*)&g_pNetwork->port;
+    IO_PORT *clientThd = (IO_PORT*) port;
+
+    uint32_t fd_socket = clientThd->s;
+    recv(fd_socket, buf, CMD_HDR_SIZE, 0);
+     HEADERPACKET* msg = (HEADERPACKET*)buf;
+
+    // cout << "---------------------------------" << endl;
+	// cout << "Start ID : "<< hex << (int)msg->startID << endl;
+	// cout << "Destination ID : " << (int)msg->destID << endl;
+	// cout << "Command : " << (int)msg->command << endl;
+	// cout << "Data Type : " << (int)msg->dataType << endl;
+	// cout << "Data Size : "<< dec << (int)msg->dataSize << endl;
+	// cout << "---------------------------------" << endl;
+
+    int datasize = msg->dataSize;
+    cout << datasize << endl;
+
+    unsigned char* recv_buf = new unsigned char[datasize +5];
+
+    memset(recv_buf, 0, datasize);	
+    cout << strlen((char*)recv_buf) << endl;
+	if(recv_binary(&g_pNetwork->port, datasize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
+	}
+    cout << recv_buf << endl;
+    cout << strlen((char*)recv_buf) << endl;
+    string str = static_cast<std::string>(reinterpret_cast<const char *>(recv_buf));
+    free(recv_buf);
+    return str;
+}
+
 int main(int, char **)
 {
     Read_Logger_cfg();
@@ -582,60 +648,83 @@ int main(int, char **)
     //key_generation();
 
     // Init Client
-    if (!initClient())
+    if (!test_initClient())
     {
         cout << "init client error!!" << endl;
         return -1;
     }
-
-    while(true){
-
-        makePacket(Server, TERM_SOCKET, 0xa0, 0x00);
-        void *p_packet = &sendDataPacket;
-
-        if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
-        {
-            cout << "PubKey send Error!!" << endl;
-        }
-        return 0;
-    }
-
-    send_pubKey_to_server();
     
-    open_camera();
-    lamping_time();
+    //send_pubKey_to_server();
+    int num_of_share = 3;
+    int threshold;
+    int request_time = 0;
+    vector<string> shares;
+    map<pair<int,int>,int> request_times;
+    for(num_of_share; num_of_share < 11 ; num_of_share ++){
+        threshold = 2;
+        for(threshold; threshold < num_of_share * 0.7; threshold++){
+            gen_shares(num_of_share, threshold);
+            request_time = 0;
+            if(shares.size() != 0)shares.clear();
+            sleep(1);
+            while(shares.size() != threshold){
+                string str = test_share_req();
+                try{
+                    for(int i = 0; i < shares.size(); i++){
+                        if(shares[i].compare(str) == 0)throw -1;
+                    }
+                    shares.push_back(str);
+                    request_time++;
+                }    
+                catch(int a)
+                {
+                    request_time++;
+                    if (a == -1)continue;
+                }
+            }
+            request_times[{num_of_share, threshold}] = request_time;
+        }
+        sleep(10);
+    }
+    cout << "------------------------------------------" << endl;
+
+    for(auto &[key, value] : request_times){
+        cout << "Number of shares : " << key.first << " / Number of thresholds : " << key.second << " / " << "request times : " << value << endl << "------------------------------------------" << endl;
+    }
+    // open_camera();
+    // lamping_time();
     
     while (true)
     {
-        if (init() == -1)
-        {
-            break;
-        }
+        // if (init() == -1)
+        // {
+        //     break;
+        // }
 
-        else
-        {
-            // capture frames
-            capture();
-            // show_frames(bgr_queue);
+        // else
+        // {
+        //     // capture frames
+        //     capture();
+        //     // show_frames(bgr_queue);
 
-            // convert frames to YUV420 and Y
-            convert_frames(bgr_queue);
+        //     // convert frames to YUV420 and Y
+        //     convert_frames(bgr_queue);
 
-            // USE Canny Edge Detection with Y_Frames
-            edge_detection(y_queue);
+        //     // USE Canny Edge Detection with Y_Frames
+        //     edge_detection(y_queue);
 
-            // make Hash by edge_detected datas
-            make_hash(feature_vector_queue);
-            sign_hash(hash_queue);
+        //     // make Hash by edge_detected datas
+        //     make_hash(feature_vector_queue);
+        //     sign_hash(hash_queue);
 
-            // Send Data to WEB UI
-            send_image_hash_to_UI(bgr_queue, y_queue);
+        //     // Send Data to WEB UI
+        //     send_image_hash_to_UI(bgr_queue, y_queue);
 
-            // send Datas to Server
-            send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
-            // initialize all settings
-            init_all_settings();
+        //     // send Datas to Server
+        //     send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
+        //     // initialize all settings
+        //     init_all_settings();
 
-        }
+        // }
     }
 }

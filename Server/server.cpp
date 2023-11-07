@@ -17,11 +17,14 @@
 #define CMD_BACKGROUND 1
 #define THIS_IS_SERVER
 
+#include <ctime>
+#include <cstdlib>
+
 #include "server.h"
 #include "tracex.h"
 #include "../openssl/sign.cpp"
-#include "../../c-sss/src/shamir.c"
-#include "../../c-sss/src/strtok.c"
+#include "../c-sss/src/shamir.c"
+#include "../c-sss/src/strtok.c"
 #include "../DB/bout_database.h"
 
 using namespace std;
@@ -29,6 +32,44 @@ using namespace std;
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
 bout_database DB(Server);
+vector<string> test_shares(10);
+
+/*--------------------------------------------------------------------------*/
+bool test_share_gen(int nshare, int threshold){
+	if(test_shares.size() != 0){
+		test_shares.clear();
+	}
+	cout << "nshare : " << nshare << ", threshold : " << threshold << endl;
+ 	unsigned char key[32], iv[32];
+	initAES(password.c_str(), NULL, key, iv);
+	ofstream ofs("symmetric_key", ios::out | ios::app);
+	if(ofs.fail()){
+		cerr << "Error!" << endl;
+		return false;
+	}
+	cout << "Success in generating AES" << endl;
+	char *shares = generate_share_strings((char*)key, nshare, threshold);
+	cout << "shares :" << shares << endl;
+	istringstream c_shares;
+	c_shares.str(shares);
+	string substr;
+
+	while(getline(c_shares, substr, '\n')){
+		test_shares.push_back(substr);
+	}
+
+	vector<string>::iterator iter;
+ 
+	for(iter=test_shares.begin();iter != test_shares.end();iter++){
+		cout << "Generated test shares : " << *iter << endl;
+	}
+	return true;
+}
+
+string test_get_share(){
+	int a = rand() % test_shares.size();
+	return test_shares[a];
+}
 
 void closesocket(SOCKET sock_fd);
 
@@ -66,21 +107,16 @@ string getCID() {
 }
 
 void generate_shares(){
-	g_pNetwork->en = EVP_CIPHER_CTX_new();
-	g_pNetwork->de = EVP_CIPHER_CTX_new();
-
-	char *key_data = const_cast<char*>(Symmetric_key.c_str());
-	int key_data_len = Symmetric_key.length() + 1;
 
 	unsigned char key[32], iv[32];
-	aes_init((unsigned char*)key_data, key_data_len, NULL, g_pNetwork->en, g_pNetwork->de, key, iv);
+	initAES(password.c_str(), NULL, key, iv);
 	ofstream ofs("symmetric_key", ios::out | ios::app);
 	if(ofs.fail()){
 		cerr << "Error!" << endl;
 	}
 	cout << "Success in generating AES" << endl;
 	char *shares = generate_share_strings((char*)key, num_of_share, key_threshold);
-
+	// -> make share with key and iv??
 	istringstream c_shares;
 	c_shares.str(shares);
 	string substr;
@@ -112,19 +148,28 @@ vector<string> get_ano_shares(string LID){
 }
 
 void encrypt_data(char* data){
+	//---------------- part of encryption ----------------//
+	unsigned char key[32], iv[32];
+	initAES(password.c_str(), NULL, key, iv);
+
+	unsigned char plaintext[] = "hello world!";
+	unsigned char ciphertext[514];
+	int ciphertext_len = aes_encrypt(plaintext, strlen((char*)plaintext), key, iv, ciphertext);
+
+	unsigned char* tmp;
+
+	tmp = h_base64_encode(ciphertext, ciphertext_len, 0);
+	cout << "encrypted data : " << tmp << endl;
+
+	//---------------- part of decryption ----------------//
+
+	
 
 }
 
-void insert_public_key(char *pubkey){
-	string key_ID = DB.get_latest_key_ID();
-	
-	string filed = "key_ID";
-	string set = "key_status = 0";
-	string table = "public_keys";
-	string where = "key_ID = '" + key_ID +"'";
-	DB.update_database(set, table, where);
-
-	DB.insert_pk_database(getCID(), 0, pubkey);
+string insert_public_key(string pubkey){
+	string LID = DB.insert_pk_database(getCID(), pubkey);
+	return LID;
 }
 
 void insert_video_data(char* CID, char* Hash, char* Signed_Hash){
@@ -510,6 +555,7 @@ int initServer()
 {
 	cout << "initServer start" << endl;
 	Read_server_cfg();
+	srand((unsigned int)time(NULL));
 	//key_generation();
 	int res;
 

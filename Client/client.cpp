@@ -226,7 +226,7 @@ static void *ClientServiceThread(void *arg)
 	uint8_t buf[CMD_HDR_SIZE];
 	uint8_t cmd[100]={0,};
 
-	pthread_detach(pthread_self());
+	//pthread_detach(pthread_self());
 
 	if(arg == NULL){
 		TRACE_ERR( "arg == NULL\n" );
@@ -288,7 +288,6 @@ static void *ClientServiceThread(void *arg)
 			// 	continue;
 			// }
 		}
-		
 		send_retry_cnt = 5;
 
 		usleep(10000);
@@ -345,6 +344,39 @@ int initClient()
 	if (res !=0 ){
 		TRACE_ERR( "ERROR create ptt client service thread\n" );
 	}
+	cout << "----Initializing END----" << endl << endl;
+
+	return TRUE;
+}
+
+int test_initClient()
+{
+	cout << "----Client Initializing----" << endl;
+	Read_client_cfg();
+	int res;
+
+	g_pNetwork = (NETWORK_CONTEXT*) malloc(sizeof(NETWORK_CONTEXT));
+	g_pNetwork->m_socket = create_socket();
+
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = inet_addr(SERVER_IP_ADDR);
+	addr.sin_port = htons(SERVER_PORT);
+
+	g_pNetwork->port.addr = addr;
+	g_pNetwork->port.s = g_pNetwork->m_socket;
+
+	if(connect(g_pNetwork->m_socket, (struct sockaddr *)&g_pNetwork->port.addr, sizeof(g_pNetwork->port.addr))){
+		perror("client : connect");
+		return -1;
+	}
+
+	//res = pthread_create(&g_pNetwork->clientThread, NULL, ClientServiceThread, (void*)&g_pNetwork->port);
+	// if (res !=0 ){
+	// 	TRACE_ERR( "ERROR create ptt client service thread\n" );
+	// }
 	cout << "----Initializing END----" << endl << endl;
 
 	return TRUE;

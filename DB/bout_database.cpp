@@ -35,7 +35,6 @@ bout_database::bout_database(int typeID){
 }
 
 bout_database::~bout_database(){
-	mysql_free_result(res);
 	mysql_close(conn);
 }
 
@@ -73,26 +72,42 @@ void bout_database::insert_data(string sorder){
 }
 
 void bout_database::select_database(char* order, string &CID, string &HASH, string &SIGNED_HASH) {
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
 	cout << "---------------------------------------------------" << endl;
 	while((row = mysql_fetch_row(res)) != NULL){
 		CID = row[0];
 		HASH = row[1];
 		SIGNED_HASH = row[2];
 	}
+	mysql_free_result(res);
 } //* CID, HASH, SIGNED_HASH를 반환함
 
 void bout_database::insert_video_data(char* CID, char* Hash, char* Signed_Hash){
 	string sorder = "INSERT INTO " + unverified_table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "');";
 	cout << sorder << endl;
 	char *order = const_cast<char*>(sorder.c_str());
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
+	mysql_free_result(res);
 } //** table name이 고정된 상태. command function 내에서 자체적으로 쿼리 작성 후 수행해도 상관없을듯 함
 
-void bout_database::insert_pk_database(string key_ID, string LID, char* key_value){
-	string sorder = "INSERT INTO public_keys values('" + key_ID + "', '" + key_value + ", 1, " + LID + ");";
+string bout_database::insert_pk_database(string key_ID, string key_value){
+	// LID reset query : 'ALTER TABLE Loggers AUTO_INCREMENT = 0;'
+	string sorder = "INSERT INTO Loggers values(0, '" + key_value + "', '" + key_ID + "');";
 	char *order = const_cast<char*>(sorder.c_str());
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
+	mysql_free_result(res);
+
+	string LID;
+	sorder = "select max(LID) from Loggers;";
+	char *xorder = const_cast<char*>(sorder.c_str());
+	MYSQL_RES *res2 = mysql_perform_query(conn, xorder);
+
+	while((row = mysql_fetch_row(res2)) != NULL){
+		LID = row[0];
+	}
+	mysql_free_result(res2);
+
+	return LID;
 }
 
 void bout_database::update_database(string set, string table, string where = ""){
@@ -102,29 +117,25 @@ void bout_database::update_database(string set, string table, string where = "")
 	char *order = const_cast<char*>(sorder.c_str());
 
 	cout << "update query : " << sorder << endl;
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
 	cout << endl << "---------------------------------------------------" << endl;
-	while((row = mysql_fetch_row(res)) != NULL){
-		string x = row[0];
-		cout << x << endl;
-	}
+	mysql_free_result(res);
 }
 
 string bout_database::get_latest_key_ID(){
-
 	char order[] = "select key_ID from public_key where key_status = 1;";
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
 	string key_ID;
 	while((row = mysql_fetch_row(res)) != NULL){
 		key_ID = row[0];
 	}
-	
+	mysql_free_result(res);
 	return key_ID;
 }
 
 string bout_database::get_share(string LID){
 	char *order = "select share from shares where LID='0' limit 1;";
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
 
 	string share;
 	while((row=mysql_fetch_row(res)) != NULL) share = row[0];
@@ -134,7 +145,7 @@ string bout_database::get_share(string LID){
 	string where = "share = '" + share + "'";
 
 	update_database(set, table, where);
-
+	mysql_free_result(res);
 	return share;
 }
 
@@ -144,19 +155,19 @@ vector<string> bout_database::get_ano_shares(string LID, int limit){
 	cout << "sorder : " << sorder << endl;
 	char *order = const_cast<char*>(sorder.c_str());
 
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
 
 	while((row = mysql_fetch_row(res)) != NULL){
 		shares.push_back(row[0]);
 	}
-
+	mysql_free_result(res);
 	return shares;
 }
 
 void bout_database::print_query(){
 	string sorder = "select * from data_table;";
 	char *order = const_cast<char*>(sorder.c_str());
-	res = mysql_perform_query(conn, order);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
 
 	while((row = mysql_fetch_row(res)) != NULL){
 		cout <<  "CID : " << row[0] << endl;
@@ -164,4 +175,5 @@ void bout_database::print_query(){
 		cout <<  "Signed Hash : " << row[2] << endl;
 
 	}
+	mysql_free_result(res);
 }

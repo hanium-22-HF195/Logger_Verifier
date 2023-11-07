@@ -22,15 +22,18 @@ typedef struct
 	unsigned char *tag;
 }ENC_TYPE;
 
+string b_base64_encode(const string &in);
+string b_base64_decode(const string &in);
+unsigned char *h_base64_encode(const unsigned char *str, int length, int *ret_length);
+unsigned char *h_base64_decode(const unsigned char *str, int length, int *ret_length);
 RSA* createPrivateRSA(string key);
 RSA* createPublicRSA(string key);
 RSA* genPrivateRSA();
 char* genPublicRSA(RSA* rsa);
 int key_generation();
-int aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx,
-             EVP_CIPHER_CTX *d_ctx, unsigned char *r_key, unsigned char *r_iv);
-unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
-unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len);
+void initAES(const std::string &pass, unsigned char *salt, unsigned char *key, unsigned char *iv);
+int aes_encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext);
+int aes_decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
 bool RSASign(RSA*rsa,
               const unsigned char* Msg,
               size_t MsgLen,

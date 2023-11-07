@@ -60,9 +60,6 @@ typedef struct
 	u_int32_t m_socket;
 	IO_PORT port;
 
-	EVP_CIPHER_CTX *en;
-    EVP_CIPHER_CTX *de;
-
 }NETWORK_CONTEXT;
 
 int initServer();
@@ -79,10 +76,15 @@ void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
 void generate_shares();
-void insert_public_key(char *pubkey);
+string insert_public_key(string pubkey);
 void insert_video_data(char* CID, char* Hash, char* Signed_Hash);
 string get_share(string LID);
 vector<string> get_ano_shares(string LID);
+
+void encrypt_data(char* data);
+
+bool test_share_gen(int nshare, int threshold);
+string test_get_share();
 
 NETWORK_CONTEXT getpnetwork();
 
