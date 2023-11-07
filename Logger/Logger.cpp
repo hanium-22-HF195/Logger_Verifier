@@ -645,7 +645,7 @@ int main(int, char **)
     Read_Logger_cfg();
     
     // key GEN
-    //key_generation();
+    key_generation();
 
     // Init Client
     if (!test_initClient())

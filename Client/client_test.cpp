@@ -2,6 +2,7 @@
 #include <string>
 
 #include "client.cpp"
+#define THIS_IS_CLIENT
 
 int main(){
     if(!initClient()){

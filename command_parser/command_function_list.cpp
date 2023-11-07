@@ -10,8 +10,12 @@
 #define Signed_Hash_size_D 350
 #define CID_size_D 23
 
+<<<<<<< HEAD
 //#define SV
 
+=======
+// #define logger
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 using namespace std;
 void mkdir_func(string str);
 
@@ -26,7 +30,11 @@ void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dat
 	for_res_packet.dataSize = dataSize;
 }
 
+<<<<<<< HEAD
 string s_dir("/home/test/images");
+=======
+string s_dir("/home/cloud9/images");
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 
 /*
  dataType : 0xa0 = char
@@ -79,6 +87,7 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 	#ifdef SV
 	string pk((char*)recv_buf);
 
+<<<<<<< HEAD
 	string sLID = insert_public_key(pk);
 	cout << "LID : " << sLID << endl;
 
@@ -95,6 +104,10 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "LID send Error!!" << endl;
 	}
 	#endif
+=======
+	insert_public_key(pk); // key 입력 후 key id를 logger에 전달하는 형식 추가 필요
+
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	free(recv_buf);
 	
 	return 1;
@@ -295,7 +308,11 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 /*------------------------------------------------------------------------*/
 /* 																		  */
 int generate_aes(HEADERPACKET* msg, IO_PORT *port){
+<<<<<<< HEAD
 	#ifdef SV
+=======
+	#ifdef logger
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	generate_shares();
 	char data[] = "hello";
 	encrypt_data(data);
@@ -314,11 +331,20 @@ int share_request(HEADERPACKET* msg, IO_PORT *port){
 	string LID((char*)recv_buf);
 	
 	cout << "LID : " <<  LID << endl;
+
 	string share;
+<<<<<<< HEAD
 	#ifdef SV
 	share = get_share(LID);
 	#endif
 	
+=======
+
+	#ifdef logger
+	share = get_share(LID);
+	#endif
+
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	cout << "**share : " << share << endl;
 	free(recv_buf);
 	char* c_share = const_cast<char*>(share.c_str());
@@ -356,12 +382,16 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-
+	#ifdef logger
 	string LID((char*)recv_buf);
+<<<<<<< HEAD
 	vector<string> share;
 	#ifdef SV
 	share = get_ano_shares(LID);
 	#endif
+=======
+	vector<string> share = get_ano_shares(LID);
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 
 	for(vector<string>::iterator iter=share.begin();iter != share.end();iter++){
 		cout << *iter << endl;
@@ -383,6 +413,10 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 			cout << "share request : send share error!" << endl;
 		}
 	}
+<<<<<<< HEAD
+=======
+	#endif
+>>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	return 1;
 }
 int another_share_response(HEADERPACKET* msg, IO_PORT *port){
