@@ -10,12 +10,8 @@
 #define Signed_Hash_size_D 350
 #define CID_size_D 23
 
-<<<<<<< HEAD
 //#define SV
 
-=======
-// #define logger
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 using namespace std;
 void mkdir_func(string str);
 
@@ -30,11 +26,7 @@ void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dat
 	for_res_packet.dataSize = dataSize;
 }
 
-<<<<<<< HEAD
 string s_dir("/home/test/images");
-=======
-string s_dir("/home/cloud9/images");
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 
 /*
  dataType : 0xa0 = char
@@ -87,7 +79,6 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 	#ifdef SV
 	string pk((char*)recv_buf);
 
-<<<<<<< HEAD
 	string sLID = insert_public_key(pk);
 	cout << "LID : " << sLID << endl;
 
@@ -104,10 +95,6 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "LID send Error!!" << endl;
 	}
 	#endif
-=======
-	insert_public_key(pk); // key 입력 후 key id를 logger에 전달하는 형식 추가 필요
-
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	free(recv_buf);
 	
 	return 1;
@@ -194,103 +181,6 @@ int video_data_response(HEADERPACKET* msg, IO_PORT *port){
 
 /*-----------------------Verify request------------------------*/
 int verify_request(HEADERPACKET* msg, IO_PORT *port){
-	// if(msg->destID == Server){
-	// 	reshape_buffer(msg->dataType, msg->dataSize);
-
-	// 	//Receive Start CID from WebUI
-	// 	recv_binary(port, msg->dataSize, (void*)recv_buf);
-	// 	string first_cid((char*)recv_buf);
-
-	// 	//Receive End CID from WebUI
-	// 	recv_binary(port, msg->dataSize, (void*)recv_buf);
-	// 	string last_cid((char*)recv_buf);
-
-	// 	if(first_cid > last_cid){
-	// 		first_cid.swap(last_cid);
-	// 	}
-
-	// 	vector<string> pk_list;
-	// 	vector<string> CID_list;
-	// 	map<string, vector<string>> key_CID_map;
-
-	// 	CIDINFO start_cid = 
-	// 	{
-	// 		first_cid.substr(0, 4),
-	// 		first_cid.substr(5, 2),
-	// 		first_cid.substr(8, 2),
-	// 		first_cid.substr(11, 2),
-	// 		first_cid.substr(14, 2),
-	// 		first_cid.substr(17, 2),
-	// 		first_cid.substr(20,3),
-	// 	};
-
-	// 	CIDINFO end_cid = 
-	// 	{
-	// 		last_cid.substr(0, 4),
-	// 		last_cid.substr(5, 2),
-	// 		last_cid.substr(8, 2),
-	// 		last_cid.substr(11, 2),
-	// 		last_cid.substr(14, 2),
-	// 		last_cid.substr(17, 2),
-	// 		last_cid.substr(20,3),
-	// 	};
-
-	// 	if(start_cid.Day != end_cid.Day){
-	// 		vector<string> table_list;
-	// 		int j = stoi(end_cid.Day) - stoi(start_cid.Day);
-	// 		for(int i = 0; i <= j; i++){
-	// 			int d = i + stoi(start_cid.Day);
-	// 			string x_table = start_cid.Year + "_" + start_cid.Month + to_string(d);
-	// 			table_list.push_back(x_table);
-	// 		}
-	// 	}
-	// 	else{
-	// 		string vtable_name = start_cid.Year + '_' + start_cid.Month + start_cid.Day;
-			
-	// 		bDB.get_list(pk_list, "public_key", "-1", first_cid, -1);
-	// 		bDB.get_list(pk_list, "public_key", first_cid, last_cid, 1);
-
-	// 		bDB.get_list(CID_list, vtable_name, first_cid, pk_list[1], 0);
-	// 		key_CID_map[pk_list[0]] = CID_list;
-	// 		CID_list.clear();
-	// 		for(int i = 1; i < pk_list.size() - 1; i++){
-	// 			bDB.get_list(CID_list, vtable_name, pk_list[i], pk_list[i + 1], 0);
-	// 			key_CID_map[pk_list[i]] = CID_list;
-	// 			CID_list.clear();
-	// 		}
-
-	// 		bDB.get_list(CID_list, vtable_name, pk_list[pk_list.size()-1], last_cid, 0);
-	// 		key_CID_map[pk_list[pk_list.size()-1]] = CID_list;
-	// 		CID_list.clear();
-	// 	}
-
-	// 	map<string, vector<string>>::iterator iter;
-	// 	for (iter = key_CID_map.begin(); iter != key_CID_map.end(); ++iter) { //�??��
-	// 		vector<string> inVect = (*iter).second;
-	// 		int str_size = CID_size_D * (inVect.size() + 1);
-
-	// 		make_res_Packet(Verifier, VER_REQ, Uchar, str_size);
-	// 		//send_binary(Verifier_port, sizeof(HEADERPACKET), p_packet);
-
-	// 		unsigned char *PK = new unsigned char[CID_size];
-	// 		strcpy((char*)PK, (*iter).first.c_str());
-			
-	// 		//send_binary(Verifier_port, CID_size, (void*)PK);
-
-	// 		unsigned char *image_CID = new unsigned char[CID_size];
-	// 		for (int j = 0; j < inVect.size(); j++) {
-	// 			strcpy((char*)image_CID, inVect[j].c_str());
-	// 			//send_binary(Verifier_port, CID_size, image_CID);
-	// 		}
-	// 	}
-	// }
-	// else if(msg->destID == Verifier){
-	// 	cout <<"hello:";
-	// }
-	// else{
-	// 	cout << "Something was wrong..." << endl;
-	// 	exit(1);
-	// }
 	return 1;
 }
 int verify_response(HEADERPACKET* msg, IO_PORT *port){
@@ -308,11 +198,7 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 /*------------------------------------------------------------------------*/
 /* 																		  */
 int generate_aes(HEADERPACKET* msg, IO_PORT *port){
-<<<<<<< HEAD
 	#ifdef SV
-=======
-	#ifdef logger
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	generate_shares();
 	char data[] = "hello";
 	encrypt_data(data);
@@ -333,18 +219,10 @@ int share_request(HEADERPACKET* msg, IO_PORT *port){
 	cout << "LID : " <<  LID << endl;
 
 	string share;
-<<<<<<< HEAD
 	#ifdef SV
 	share = get_share(LID);
 	#endif
 	
-=======
-
-	#ifdef logger
-	share = get_share(LID);
-	#endif
-
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	cout << "**share : " << share << endl;
 	free(recv_buf);
 	char* c_share = const_cast<char*>(share.c_str());
@@ -382,16 +260,11 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-	#ifdef logger
 	string LID((char*)recv_buf);
-<<<<<<< HEAD
 	vector<string> share;
 	#ifdef SV
 	share = get_ano_shares(LID);
 	#endif
-=======
-	vector<string> share = get_ano_shares(LID);
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 
 	for(vector<string>::iterator iter=share.begin();iter != share.end();iter++){
 		cout << *iter << endl;
@@ -413,10 +286,6 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 			cout << "share request : send share error!" << endl;
 		}
 	}
-<<<<<<< HEAD
-=======
-	#endif
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 	return 1;
 }
 int another_share_response(HEADERPACKET* msg, IO_PORT *port){
@@ -507,8 +376,9 @@ int gen_share_res(HEADERPACKET* msg, IO_PORT *port){
 
 int test_share_req(HEADERPACKET* msg, IO_PORT *port){
 	#ifdef SV
-	string s_share = test_get_share();
+	string s_share = test_get_share() + '\0';
 	char* c_share = const_cast<char*>(s_share.c_str());
+	cout << c_share << endl;
 
 	void* p_packet = &for_res_packet;
 	make_res_Packet(Logger, TEST_SHARE_REQ, 0xa0, strlen(c_share));

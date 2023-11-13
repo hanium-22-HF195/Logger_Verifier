@@ -70,6 +70,7 @@ string test_get_share(){
 	int a = rand() % test_shares.size();
 	return test_shares[a];
 }
+/*--------------------------------------------------------------------------*/
 
 void closesocket(SOCKET sock_fd);
 
@@ -167,14 +168,9 @@ void encrypt_data(char* data){
 
 }
 
-<<<<<<< HEAD
 string insert_public_key(string pubkey){
 	string LID = DB.insert_pk_database(getCID(), pubkey);
 	return LID;
-=======
-void insert_public_key(string pubkey){
-	DB.insert_pk_database(getCID(), pubkey);
->>>>>>> 8990c72275fd20567093b13da840a0c0191911c4
 }
 
 void insert_video_data(char* CID, char* Hash, char* Signed_Hash){

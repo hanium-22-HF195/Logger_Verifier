@@ -39,6 +39,7 @@ pthread_t UpdThread;
 queue<cv::Mat> bgr_queue;            // for original frame(BGR)Mat queue
 queue<cv::Mat> yuv420_queue;         // for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;              // for y_frame Mat queue
+queue<cv::Mat> G_queue;              // for gray scale Mat queue
 queue<cv::Mat> feature_vector_queue; // for edge detection Canny
 queue<string> hash_queue;            // for hash made by feature vector
 queue<string> hash_signed_queue;
@@ -293,7 +294,7 @@ void capture()
 }
 
 
-void convert_frames(queue<cv::Mat> &BGR_QUEUE)
+void convert_frames2YUV(queue<cv::Mat> &BGR_QUEUE)
 {
 
     cout << endl
@@ -335,7 +336,44 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE)
          << endl;
 }
 
-void edge_detection(queue<cv::Mat> &Y_QUEUE)
+void convert_frames2gray(queue<cv::Mat> &BGR_QUEUE)
+{
+
+    cout << endl
+         << "----Start to convert Frames into Grayscale----" << endl
+         << endl;
+    queue<cv::Mat> BGR_queue(BGR_QUEUE);
+
+    while (true)
+    {
+
+        if (BGR_queue.size() == 0)
+        {
+            break;
+        }
+
+        cv::Mat original = BGR_queue.front();
+        cv::Mat temp;
+        BGR_queue.pop();
+
+        // CONVERT BGR To YUV420 and YUV420 to Y
+        cv::cvtColor(original, temp, cv::CV_BGR2GRAY);
+
+        // save frames into queue
+        G_queue.push_back(temp);
+
+        // release Mat
+        original.release();
+        temp.release();
+    }
+
+    cout << "    Gray scale frame are saved" << endl;
+    cout << "    Grayscale :  " << G_queue.size() << endl;
+    cout << "----FRAMES CONVERTED---------" << endl
+         << endl;
+}
+
+void edge_detection_YUV(queue<cv::Mat> &Y_QUEUE)
 {
     queue<cv::Mat> Y_queue(Y_QUEUE);
 
@@ -357,6 +395,35 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE)
 
         feature_vector_queue.push(temp);
         Y_queue.pop();
+        cnt++;
+        temp.release();
+    }
+    cout << endl
+         << "    Edge Detection made: " << feature_vector_queue.size() << endl;
+}
+
+void edge_detection_BGR(queue<cv::Mat> &G_QUEUE)
+{
+    queue<cv::Mat> G_queue(G_QUEUE);
+
+    cout << "----Building feature vectors." << endl;
+    int cnt = 0;
+
+    while (true)
+    {
+        if (BGR_queue.size() == 0)
+        {
+            break;
+        }
+        cv::Mat temp;
+
+        // Canny(img, threshold1, threshold2)
+        // threshold1 = Determining whether an edge is in the adjacency with another edge
+        // threshold2 = Determine if it is an edge or not
+        cv::Canny(BGR_queue.front(), temp, 20, 40);
+
+        feature_vector_queue.push(temp);
+        BGR_queue.pop();
         cnt++;
         temp.release();
     }
@@ -613,29 +680,20 @@ string test_share_req(){
 
     uint32_t fd_socket = clientThd->s;
     recv(fd_socket, buf, CMD_HDR_SIZE, 0);
-     HEADERPACKET* msg = (HEADERPACKET*)buf;
-
-    // cout << "---------------------------------" << endl;
-	// cout << "Start ID : "<< hex << (int)msg->startID << endl;
-	// cout << "Destination ID : " << (int)msg->destID << endl;
-	// cout << "Command : " << (int)msg->command << endl;
-	// cout << "Data Type : " << (int)msg->dataType << endl;
-	// cout << "Data Size : "<< dec << (int)msg->dataSize << endl;
-	// cout << "---------------------------------" << endl;
+    HEADERPACKET* msg = (HEADERPACKET*)buf;
 
     int datasize = msg->dataSize;
-    cout << datasize << endl;
 
-    unsigned char* recv_buf = new unsigned char[datasize +5];
+    unsigned char* recv_buf = new unsigned char[datasize + 1] ;
 
-    memset(recv_buf, 0, datasize);	
-    cout << strlen((char*)recv_buf) << endl;
+    memset(recv_buf, 0, datasize + 1);
+
 	if(recv_binary(&g_pNetwork->port, datasize, recv_buf) == 0){
 		cout << "recv_binary fail" << endl;
 	}
-    cout << recv_buf << endl;
-    cout << strlen((char*)recv_buf) << endl;
+    recv_buf[datasize] = '\0';
     string str = static_cast<std::string>(reinterpret_cast<const char *>(recv_buf));
+    
     free(recv_buf);
     return str;
 }
@@ -645,7 +703,7 @@ int main(int, char **)
     Read_Logger_cfg();
     
     // key GEN
-    key_generation();
+    //key_generation();
 
     // Init Client
     if (!test_initClient())
@@ -684,7 +742,6 @@ int main(int, char **)
             }
             request_times[{num_of_share, threshold}] = request_time;
         }
-        sleep(10);
     }
     cout << "------------------------------------------" << endl;
 
@@ -696,35 +753,43 @@ int main(int, char **)
     
     while (true)
     {
-        // if (init() == -1)
-        // {
-        //     break;
-        // }
+        if (init() == -1)
+        {
+            break;
+        }
 
-        // else
-        // {
-        //     // capture frames
-        //     capture();
-        //     // show_frames(bgr_queue);
+        else
+        {
+            // capture frames
+            capture();
 
-        //     // convert frames to YUV420 and Y
-        //     convert_frames(bgr_queue);
+            // show_frames(bgr_queue);
 
-        //     // USE Canny Edge Detection with Y_Frames
-        //     edge_detection(y_queue);
+            if(YUV_switch){
+                // convert frames to YUV420 and Y
+                convert_frames2YUV(bgr_queue);
+                // USE Canny Edge Detection with Y_Frames
+                edge_detection_YUV(y_queue);
+            }
+            else{
+                //convert frames to Grayscale
+                convert_frames2gray(bgr_queue);
+                // USE Canny Edge Detection with Grayscale
+                edge_detection_BGR(G_queue);
+            }
+            
+            // make Hash by edge_detected datas
+            make_hash(feature_vector_queue);
+            sign_hash(hash_queue);
 
-        //     // make Hash by edge_detected datas
-        //     make_hash(feature_vector_queue);
-        //     sign_hash(hash_queue);
+            // Send Data to WEB UI
+            send_image_hash_to_UI(bgr_queue, y_queue);
 
-        //     // Send Data to WEB UI
-        //     send_image_hash_to_UI(bgr_queue, y_queue);
+            // send Datas to Server
+            send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
+            // initialize all settings
+            init_all_settings();
 
-        //     // send Datas to Server
-        //     send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
-        //     // initialize all settings
-        //     init_all_settings();
-
-        // }
+        }
     }
 }

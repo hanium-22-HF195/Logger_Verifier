@@ -54,7 +54,7 @@ void Read_server_cfg(){
         pubkeyfile_path = const_cast<char*>(value["Server"]["public key path"].asString().c_str());
         prikeyfile_path = const_cast<char*>(value["Server"]["private key path"].asString().c_str());
 
-        password   = value["Server"]["Password"].asString();
+        password        = value["Server"]["Password"].asString();
         num_of_share    = value["Server"]["Number of Share"].asInt();
         key_threshold   = value["Server"]["Gen Key Threshold"].asInt();
 
