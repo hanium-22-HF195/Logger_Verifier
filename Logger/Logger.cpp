@@ -36,6 +36,8 @@ string getCID();
 pthread_mutex_t frameLocker;
 pthread_t UpdThread;
 
+int LID;
+
 queue<cv::Mat> bgr_queue;            // for original frame(BGR)Mat queue
 queue<cv::Mat> yuv420_queue;         // for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;              // for y_frame Mat queue
@@ -97,7 +99,7 @@ int send_pubKey_to_server()
 void open_camera() {
     
      // open the default camera using default API
-    int deviceID = 0;         // 0 = open default camera
+    int deviceID = 1;         // 0 = open default camera
     int apiID = cv::CAP_V4L2; // use V4L2
     // open selected camera using selected API
     cap.open(deviceID, apiID);   
@@ -175,6 +177,10 @@ void init_queue()
 
 void lamping_time() {
     Mat temp;
+    if (!cap.isOpened())
+    {
+        cerr << "ERROR! Unable to open camera -- lamping time\n";
+    }
     for(int i = 0; i< 20; i++){
         cap >> temp;
     }
@@ -222,7 +228,6 @@ void capture()
         {
             cout << "Frame is empty" << endl;
         }
-
         else if (elementmean != 0)
         {
             bgr_queue.push(currentFrame);
@@ -230,7 +235,6 @@ void capture()
             string s_cid = getCID();
             cid_queue.push(s_cid);
         }
-
         else
         {
             cout << "lamping time" << endl;
@@ -357,10 +361,10 @@ void convert_frames2gray(queue<cv::Mat> &BGR_QUEUE)
         BGR_queue.pop();
 
         // CONVERT BGR To YUV420 and YUV420 to Y
-        cv::cvtColor(original, temp, cv::CV_BGR2GRAY);
+        cv::cvtColor(original, temp, cv::COLOR_BGR2GRAY);
 
         // save frames into queue
-        G_queue.push_back(temp);
+        G_queue.push(temp);
 
         // release Mat
         original.release();
@@ -411,7 +415,7 @@ void edge_detection_BGR(queue<cv::Mat> &G_QUEUE)
 
     while (true)
     {
-        if (BGR_queue.size() == 0)
+        if (bgr_queue.size() == 0)
         {
             break;
         }
@@ -420,10 +424,10 @@ void edge_detection_BGR(queue<cv::Mat> &G_QUEUE)
         // Canny(img, threshold1, threshold2)
         // threshold1 = Determining whether an edge is in the adjacency with another edge
         // threshold2 = Determine if it is an edge or not
-        cv::Canny(BGR_queue.front(), temp, 20, 40);
+        cv::Canny(bgr_queue.front(), temp, 20, 40);
 
         feature_vector_queue.push(temp);
-        BGR_queue.pop();
+        bgr_queue.pop();
         cnt++;
         temp.release();
     }
@@ -586,7 +590,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         strcpy(cid_buffer, cid_send.front().c_str());
         strcpy(hash_buffer, hash_send.front().c_str());
         strcpy(signed_hash_buffer, signed_hash_send.front().c_str());
-        memcpy(video_buffer, yuv_send.front().data, video_bufsize);
+        memcpy(video_buffer, yuv_send.front().data, video_bufsize); // queue -> mapping //
 
         makePacket(Server, VIDEO_DATA_SND, 0xa1, total_data_size);
 
@@ -698,21 +702,7 @@ string test_share_req(){
     return str;
 }
 
-int main(int, char **)
-{
-    Read_Logger_cfg();
-    
-    // key GEN
-    //key_generation();
-
-    // Init Client
-    if (!test_initClient())
-    {
-        cout << "init client error!!" << endl;
-        return -1;
-    }
-    
-    //send_pubKey_to_server();
+void performance_evaluation(){
     int num_of_share = 3;
     int threshold;
     int request_time = 0;
@@ -748,9 +738,34 @@ int main(int, char **)
     for(auto &[key, value] : request_times){
         cout << "Number of shares : " << key.first << " / Number of thresholds : " << key.second << " / " << "request times : " << value << endl << "------------------------------------------" << endl;
     }
-    // open_camera();
-    // lamping_time();
+}
+
+int main(int, char **)
+{
+    Read_Logger_cfg();
     
+    // key GEN
+    key_generation();
+
+    // Init Client
+    // if (!test_initClient())
+    // {
+    //     cout << "init client error!!" << endl;
+    //     return -1;
+    // }
+
+    if (!initClient())
+    {
+        cout << "init client error!!" << endl;
+        return -1;
+    }
+    
+    //performance_evaluation();
+    send_pubKey_to_server();
+    
+    open_camera();
+    lamping_time();
+    bool YUV_switch = false;
     while (true)
     {
         if (init() == -1)
@@ -783,7 +798,7 @@ int main(int, char **)
             sign_hash(hash_queue);
 
             // Send Data to WEB UI
-            send_image_hash_to_UI(bgr_queue, y_queue);
+            //send_image_hash_to_UI(bgr_queue, y_queue);
 
             // send Datas to Server
             send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);

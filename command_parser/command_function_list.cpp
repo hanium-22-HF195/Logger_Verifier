@@ -75,7 +75,7 @@ int public_key_request(HEADERPACKET* msg, IO_PORT *port){
 	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
 		cout << "recv_binary fail" << endl;
 		return -1;
-	}
+	}  // retry
 	#ifdef SV
 	string pk((char*)recv_buf);
 

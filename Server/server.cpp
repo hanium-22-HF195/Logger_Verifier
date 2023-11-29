@@ -321,7 +321,7 @@ int recv_binary( IO_PORT *p, long size, HANDLE pdata )
 		if( recvbytes <= 0 ) {
 			TRACE_ERR( "ERR recv_binary :%d\n", recvbytes );
 			return FALSE;
-		}
+		} // recvbytes <= 0 ??
 		pdata += recvbytes;
 		remainbytes -= recvbytes;
 		TRACEC(D_RED, "remainbytes = %d, recvBytes = %d\n", remainbytes, recvbytes);
@@ -521,7 +521,7 @@ static void *listenThd(void *arg)
 		}
 
 		len = sizeof( addr);
-		news = accept( thisThd->m_socket, (struct sockaddr *)&addr, &len );
+		news = accept( thisThd->m_socket, (struct sockaddr *)&addr, &len ); // news = unsigned int 
 		if( news == -1 ) {
 			TRACE_ERR( "accept() failed :%s\n", strerror( errno ) );
 			continue;

@@ -67,12 +67,13 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	// }
 
 	for (i = 0, ack = -3; i < len; i++){
-		if(ack == 1 || ack == 0) break;
 		if(parser_desp[i].code == pmsg->command){
 			ack = parser_desp[i].callback(pmsg, &port);
+			break;
 		}
 	}
 	cout << "ack : " << ack << endl;
+	
 	switch(ack){
 		case -3 : cout << "Somethings Wrong... callback function doesn't work";
 				  return -1;

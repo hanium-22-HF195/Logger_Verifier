@@ -34,11 +34,10 @@
         "fps"                   : 10,
         "frame count"           : 10,
         "signed hash bufsize"   : 350,
-        "YUV switch"            :
 
-        "Y frame file path"     : "/home/pi/Web-UI/static/images/L_Y_frame.png",
-        "hash file path"        : "/home/pi/Web-UI/static/hash.txt",
-        "original file path"    : "/home/pi/Web-UI/static/images/L_original.png"
+        "Y frame file path"     : "/home/test/images",
+        "hash file path"        : "/home/test/Web-UI/static/hash.txt",
+        "original file path"    : "/home/test/Web-UI/static/images/L_original.png"
     },
 
     "HeaderPacket" :
