@@ -15,15 +15,25 @@ sudo mysql -u root
 5. Make DB
 CREATE DATABASE hanium;
 
-6. CHECK IF DB made
+6. Use DB
+USE hanium;
+
+7. Create tables
+CREATE TABLE Loggers(LID int NOT NULL AUTO_INCREMENT, public_key varchar(450), key_ID varchar(45), PRIMARY KEY(LID));
+CREATE TABLE shares(share varchar(255), LID int NOT NULL, PRIMARY KEY(share), FOREIGN KEY (LID) REFERENCES Loggers (LID));
+CREATE TABLE verified_table(CID varchar(45), Hash varchar(450), result varchar(45), PRIMARY KEY(CID));
+CREATE TABLE video_data_table(CID varchar(45), Signed_hash varchar(450), key_ID varchar(45), FOREIGN KEY(CID) REFERENCES verified_table(CID));
+
+8. CHECK IF DB made
 SHOW DATABASES;
 
-7. Make USER
+9. Make USER
 USE mysql;
 CREATE USER 'hanium'@'%' IDENTIFIED BY '1234';
 
-8. GRANT PRIVILEGES
+10. GRANT PRIVILEGES
 GRANT ALL PRIVILEGES ON hanium.*TO'hanium'@'%';
 
-9. REFLASH
+11. REFLASH
 FLUSH PRIVILEGES;
+
