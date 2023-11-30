@@ -10,7 +10,7 @@
 #define Signed_Hash_size_D 350
 #define CID_size_D 23
 
-//#define SV
+#define SV
 
 using namespace std;
 void mkdir_func(string str);
@@ -333,19 +333,19 @@ int decrypt_data_at_server(HEADERPACKET* msg, IO_PORT *port){
  This function is for test. Receive data and write down .txt file. 
 */
 int test(HEADERPACKET* msg, IO_PORT *port){
-	// FILE *file = fopen("test.txt", "wb");
-	// unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
+	FILE *file = fopen("test.txt", "wb");
+	unsigned char* recv_buf = (unsigned char*)malloc(msg->dataSize);
 	
-	// if(recv_binary(port, msg->dataSize, recv_buf) == 0){
-	// 	cout << "recv_binary fail" << endl;
-	// 	return -1;
-	// }
+	if(recv_binary(port, msg->dataSize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
+		return -1;
+	}
 	
-	// fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 	
-	// fflush(file);
-	// fclose(file);
-	// free(recv_buf);
+	fflush(file);
+	fclose(file);
+	free(recv_buf);
 
 
 
