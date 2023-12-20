@@ -133,14 +133,14 @@ string bout_database::get_latest_key_ID(){
 	return key_ID;
 }
 
-string bout_database::get_share(string LID){
-	char *order = "select share from shares where LID='0' limit 1;";
+string bout_database::get_share(int LID){
+	char *order = "select share from shares where LID=-1 limit 1;";
 	MYSQL_RES *res = mysql_perform_query(conn, order);
 
 	string share;
 	while((row=mysql_fetch_row(res)) != NULL) share = row[0];
 	cout << "DB share : " << share << endl;
-	string set = "LID = '" + LID + "'";
+	string set = "LID = " + LID;
 	string table = "shares";
 	string where = "share = '" + share + "'";
 
@@ -149,10 +149,10 @@ string bout_database::get_share(string LID){
 	return share;
 }
 
-vector<string> bout_database::get_ano_shares(string LID, int limit){
+vector<string> bout_database::get_ano_shares(int LID, int limit){
 	vector<string> shares;
-	string sorder = "select share from shares where LID != '" + LID + "' limit " + to_string(limit) + ";";
-	cout << "sorder : " << sorder << endl;
+	string S_LID = to_string(LID) ;
+	string sorder = "select share from shares where LID != " + S_LID + " limit " + to_string(limit) + ";";
 	char *order = const_cast<char*>(sorder.c_str());
 
 	MYSQL_RES *res = mysql_perform_query(conn, order);
@@ -160,6 +160,7 @@ vector<string> bout_database::get_ano_shares(string LID, int limit){
 	while((row = mysql_fetch_row(res)) != NULL){
 		shares.push_back(row[0]);
 	}
+
 	mysql_free_result(res);
 	return shares;
 }

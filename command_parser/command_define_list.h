@@ -25,11 +25,8 @@
 #define SHARE_RES       0x83
 #define ANO_SHARE_REQ   0x84
 #define ANO_SHARE_RES   0x85
-#define GEN_KEY_LG      0x86
-#define ENC_DATA_LG     0x87
-#define ENC_DATA_REQ    0x88
-#define ENC_DATA_RES    0x89
-#define DEC_DATA_SER    0x90
+
+
 /*---------This function is for Testing--------------*/
 
 #define HI_I_M          0x09

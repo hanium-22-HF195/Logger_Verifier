@@ -20,6 +20,9 @@
 
 #include "client.h"
 #include "tracex.h"
+#include "../openssl/sign.cpp"
+#include "../c-sss/src/shamir.c"
+#include "../c-sss/src/strtok.c"
 
 #include <iostream>
 
@@ -27,6 +30,7 @@
 
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
+unsigned char key[32], iv[32];
 
 using namespace std;
 
@@ -57,6 +61,35 @@ string getCID() {
     }
     
     return s_CID;
+}
+
+char* extract_secret_from_share(vector<string> shares){
+	string temp_share;
+
+	vector<string>::iterator iter;
+	for(iter = shares.begin(); iter != shares.end(); iter++){
+		temp_share += *iter;
+	}
+
+	char* secret = extract_secret_from_share_strings(temp_share.c_str());
+
+	return secret;
+}
+
+void generate_AES(string pass){
+	initAES(pass.c_str(), NULL, key, iv);
+	ofstream ofs("symmetric_key", ios::out | ios::app);
+	if(ofs.fail()){
+		cerr << "Error!" << endl;
+	}
+	cout << "Success in generating AES" << endl;
+}
+
+unsigned char* encrypt_data(char* secret, char* data){
+	unsigned char ciphertext[514];
+	int ciphertext_len = aes_encrypt(data, strlen(data), key, iv, ciphertext);
+
+	return ciphertext;
 }
 
 void insert_port(int ID, int port){

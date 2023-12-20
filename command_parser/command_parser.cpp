@@ -28,11 +28,6 @@ cmdp_desp parser_desp[] =
 	{SHARE_RES					, share_response		},
 	{ANO_SHARE_REQ				, another_share_request	},
 	{ANO_SHARE_RES				, another_share_response},
-	{GEN_KEY_LG					, generate_key_at_logger},
-	{ENC_DATA_LG				, encrypt_data_at_logger},
-	{ENC_DATA_REQ				, encrypt_data_request	},
-	{ENC_DATA_RES				, encrypt_data_response	},
-	{DEC_DATA_SER				, decrypt_data_at_server},
 
 	// Testing command
 	{TEST_CMD					, test					},

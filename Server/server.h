@@ -78,10 +78,14 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 void generate_shares();
 string insert_public_key(string pubkey);
 void insert_video_data(char* CID, char* Hash, char* Signed_Hash);
-string get_share(string LID);
-vector<string> get_ano_shares(string LID);
+string get_share(int LID);
+vector<string> get_ano_shares(int LID);
+char* extract_secret_from_share(vector<string> shares);
+void generate_AES(string pass);
+unsigned char* encrypt_data(char* secret, unsigned char* data);
+unsigned char* decrypt_data(char* secret, unsigned char* data);
 
-void encrypt_data(char* data);
+void encrypt_data();
 
 bool test_share_gen(int nshare, int threshold);
 string test_get_share();

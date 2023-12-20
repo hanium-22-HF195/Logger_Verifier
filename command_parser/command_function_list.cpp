@@ -200,8 +200,6 @@ int prover_response(HEADERPACKET* msg, IO_PORT *port){
 int generate_aes(HEADERPACKET* msg, IO_PORT *port){
 	#ifdef SV
 	generate_shares();
-	char data[] = "hello";
-	encrypt_data(data);
 	#endif
 	
 	return 1;
@@ -214,7 +212,7 @@ int share_request(HEADERPACKET* msg, IO_PORT *port){
 		return -1;
 	}
 
-	string LID((char*)recv_buf);
+	int LID = atoi((char*)recv_buf);
 	
 	cout << "LID : " <<  LID << endl;
 
@@ -260,7 +258,7 @@ int another_share_request(HEADERPACKET* msg, IO_PORT *port){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-	string LID((char*)recv_buf);
+	int LID = atoi((char*)recv_buf);
 	vector<string> share;
 	#ifdef SV
 	share = get_ano_shares(LID);
@@ -306,23 +304,6 @@ int another_share_response(HEADERPACKET* msg, IO_PORT *port){
 
 	return 1;
 }
-int generate_key_at_logger(HEADERPACKET* msg, IO_PORT *port){
-
-	return 1;
-}
-int encrypt_data_at_logger(HEADERPACKET* msg, IO_PORT *port){
-	return 1;
-}
-int encrypt_data_request(HEADERPACKET* msg, IO_PORT *port){
-	return 1;
-}
-int encrypt_data_response(HEADERPACKET* msg, IO_PORT *port){
-	return 1;
-}
-int decrypt_data_at_server(HEADERPACKET* msg, IO_PORT *port){
-	return 1;
-}
-
 
 
 /*																		  */
@@ -346,8 +327,6 @@ int test(HEADERPACKET* msg, IO_PORT *port){
 	fflush(file);
 	fclose(file);
 	free(recv_buf);
-
-
 
 	return 1;
 }

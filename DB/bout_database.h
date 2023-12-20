@@ -45,8 +45,8 @@ public:
 	void update_database(string set, string table, string where);
 	void print_query();
 	void insert_data(string sorder);
-	string get_share(string LID);
-	vector<string> get_ano_shares(string LID, int limit);
+	string get_share(int LID);
+	vector<string> get_ano_shares(int LID, int limit);
 };
 
 #endif

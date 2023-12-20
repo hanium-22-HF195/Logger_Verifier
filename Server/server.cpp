@@ -33,6 +33,7 @@ NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
 bout_database DB(Server);
 vector<string> test_shares(10);
+unsigned char key[32], iv[32];
 
 /*--------------------------------------------------------------------------*/
 bool test_share_gen(int nshare, int threshold){
@@ -40,7 +41,6 @@ bool test_share_gen(int nshare, int threshold){
 		test_shares.clear();
 	}
 	cout << "nshare : " << nshare << ", threshold : " << threshold << endl;
- 	unsigned char key[32], iv[32];
 	initAES(password.c_str(), NULL, key, iv);
 	ofstream ofs("symmetric_key", ios::out | ios::app);
 	if(ofs.fail()){
@@ -108,15 +108,7 @@ string getCID() {
 }
 
 void generate_shares(){
-
-	unsigned char key[32], iv[32];
-	initAES(password.c_str(), NULL, key, iv);
-	ofstream ofs("symmetric_key", ios::out | ios::app);
-	if(ofs.fail()){
-		cerr << "Error!" << endl;
-	}
-	cout << "Success in generating AES" << endl;
-	char *shares = generate_share_strings((char*)key, num_of_share, key_threshold);
+	char *shares = generate_share_strings(&*password.begin(), num_of_share, key_threshold);
 	// -> make share with key and iv??
 	istringstream c_shares;
 	c_shares.str(shares);
@@ -130,42 +122,55 @@ void generate_shares(){
 	vector<string>::iterator iter;
  
 	for(iter=share.begin();iter != share.end();iter++){
-		substr = "insert into shares value('" + *iter + "', '0');";
-		cout << "substr : " << substr << endl;
+		substr = "insert into shares value('" + *iter + "', -1);";
 		DB.insert_data(substr);
 	}
 }
 
-string get_share(string LID){
+string get_share(int LID){
 	string share = DB.get_share(LID);
 
 	return share;
 }
 
-vector<string> get_ano_shares(string LID){
-	vector<string> share = DB.get_ano_shares(LID, key_threshold - 1);
-
-	return share;
+vector<string> get_ano_shares(int LID){
+	return DB.get_ano_shares(LID, key_threshold);
 }
 
-void encrypt_data(char* data){
-	//---------------- part of encryption ----------------//
-	unsigned char key[32], iv[32];
-	initAES(password.c_str(), NULL, key, iv);
+char* extract_secret_from_share(vector<string> shares){
+	string temp_share;
 
-	unsigned char plaintext[] = "hello world!";
+	vector<string>::iterator iter;
+	for(iter = shares.begin(); iter != shares.end(); iter++){
+		temp_share += *iter;
+	}
+
+	char* secret = extract_secret_from_share_strings(temp_share.c_str());
+
+	return secret;
+}
+
+void generate_AES(string pass){
+	initAES(pass.c_str(), NULL, key, iv);
+	ofstream ofs("symmetric_key", ios::out | ios::app);
+	if(ofs.fail()){
+		cerr << "Error!" << endl;
+	}
+	cout << "Success in generating AES" << endl;
+}
+
+unsigned char* encrypt_data(char* secret, unsigned char* data){
 	unsigned char ciphertext[514];
-	int ciphertext_len = aes_encrypt(plaintext, strlen((char*)plaintext), key, iv, ciphertext);
+	int ciphertext_len = aes_encrypt(data, strlen((char*)data), key, iv, ciphertext);
 
-	unsigned char* tmp;
+	return ciphertext;
+}
 
-	tmp = h_base64_encode(ciphertext, ciphertext_len, 0);
-	cout << "encrypted data : " << tmp << endl;
-
-	//---------------- part of decryption ----------------//
-
+unsigned char *decrypt_data(char* secret, unsigned char* data){
+	unsigned char plainText[514];
+	int plainText_len = aes_decrypt(data, strlen((char*)data), key, iv, plainText);
 	
-
+	return plainText;
 }
 
 string insert_public_key(string pubkey){

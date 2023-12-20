@@ -2,14 +2,14 @@
     "Server" :
     {
         "Server Port"           : 8700,
-        "storage dir"           : "/home/test/images/",
+        "storage dir"           : "/home/cloud9/images/",
 
         "Hash size"             : 64,
         "Signed hash size"      : 350,
         "CID size"              : 23,
-        
-        "public key path"       : "/home/test/2023_pro/pubkey.txt",
-        "private key path"      : "/home/test/2023_pro/prikey.txt",
+
+        "public key path"       : "/home/cloud9/Logger_Verifier/pubkey.txt",
+        "private key path"      : "/home/cloud9/Logger_Verifier/prikey.txt",
         "Password"              : "This is password",
         "Number of Share"       : 10,
         "Gen Key Threshold"     : 5,
@@ -53,7 +53,7 @@
         "DB user"               : "hanium",
         "DB password"           : "1234",
         "DB database"           : "hanium",
-        "storage dir"           : "/home/test/images/"
+        "storage dir"           : "/home/cloud9/images/"
     }, 
 
     "Default data size" :

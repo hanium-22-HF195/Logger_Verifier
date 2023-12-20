@@ -86,6 +86,10 @@ int recv_binary( IO_PORT *p, long size,  HANDLE pdata );
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
+char* extract_secret_from_share(vector<string> shares);
+void generate_AES(string pass);
+unsigned char* encrypt_data(char* secret, char* data);
+
 void insert_port(int ID, int port);
 void pop_port(int ID);
 string getCID();
