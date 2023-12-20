@@ -10,7 +10,7 @@
 #define Signed_Hash_size_D 350
 #define CID_size_D 23
 
-#define SV
+//#define SV
 
 using namespace std;
 void mkdir_func(string str);

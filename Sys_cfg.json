@@ -2,14 +2,14 @@
     "Server" :
     {
         "Server Port"           : 8700,
-        "storage dir"           : "/home/test/images/",
+        "storage dir"           : "/home/pi/images/",
 
         "Hash size"             : 64,
         "Signed hash size"      : 350,
         "CID size"              : 23,
         
-        "public key path"       : "/home/test/2023_pro/pubkey.txt",
-        "private key path"      : "/home/test/2023_pro/prikey.txt",
+        "public key path"       : "/home/pi/2023_pro/pubkey.txt",
+        "private key path"      : "/home/pi/2023_pro/prikey.txt",
         "Password"              : "This is password",
         "Number of Share"       : 10,
         "Gen Key Threshold"     : 5,
@@ -35,9 +35,9 @@
         "frame count"           : 10,
         "signed hash bufsize"   : 350,
 
-        "Y frame file path"     : "/home/test/images",
-        "hash file path"        : "/home/test/Web-UI/static/hash.txt",
-        "original file path"    : "/home/test/Web-UI/static/images/L_original.png"
+        "Y frame file path"     : "/home/pi/images",
+        "hash file path"        : "/home/pi/Web-UI/static/hash.txt",
+        "original file path"    : "/home/pi/Web-UI/static/images/L_original.png"
     },
 
     "HeaderPacket" :
@@ -53,7 +53,7 @@
         "DB user"               : "hanium",
         "DB password"           : "1234",
         "DB database"           : "hanium",
-        "storage dir"           : "/home/test/images/"
+        "storage dir"           : "/home/pi/images/"
     }, 
 
     "Default data size" :

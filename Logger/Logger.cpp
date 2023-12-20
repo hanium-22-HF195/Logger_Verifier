@@ -99,10 +99,15 @@ int send_pubKey_to_server()
 void open_camera() {
     
      // open the default camera using default API
-    int deviceID = 1;         // 0 = open default camera
+    int deviceID = 0;         // 0 = open default camera
     int apiID = cv::CAP_V4L2; // use V4L2
     // open selected camera using selected API
     cap.open(deviceID, apiID);   
+
+    if(!cap.isOpened()){
+        cout << "camera doesn't open" << endl;
+        exit(0);
+    }
 }
 
 int init()
@@ -754,18 +759,18 @@ int main(int, char **)
     //     return -1;
     // }
 
-    if (!initClient())
-    {
-        cout << "init client error!!" << endl;
-        return -1;
-    }
+    // if (!initClient())
+    // {
+    //     cout << "init client error!!" << endl;
+    //     return -1;
+    // }
     
-    //performance_evaluation();
-    send_pubKey_to_server();
+    // //performance_evaluation();
+    // send_pubKey_to_server();
     
     open_camera();
     lamping_time();
-    bool YUV_switch = false;
+    bool YUV_switch = true;
     while (true)
     {
         if (init() == -1)
@@ -801,7 +806,7 @@ int main(int, char **)
             //send_image_hash_to_UI(bgr_queue, y_queue);
 
             // send Datas to Server
-            send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
+            //send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
             // initialize all settings
             init_all_settings();
 
