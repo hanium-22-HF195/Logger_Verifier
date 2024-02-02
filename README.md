@@ -37,13 +37,9 @@ mv Logger_Verifier hanium_2022
 
 + Need to Change SERVER IP ADDRESS
 ```
-cd Client
+nano/vi/vim Sys_cfg.json
 ```
-```
-nano/vi/vim cfg.h
-```
-```
-change SERVER_IP_ADDR to your RPI's working as Server
+
 ```
 + compile 
 1. Logger
