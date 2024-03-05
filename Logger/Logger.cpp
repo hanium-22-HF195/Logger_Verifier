@@ -19,7 +19,7 @@
 
 #include "logger_cfg.h"
 #include "Logger_function_list.h"
-#include "../openssl/sign.cpp"
+//#include "../openssl/sign.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
 #include "../Client/client.cpp"
 #include "../command_parser/command_define_list.h"
@@ -273,32 +273,32 @@ void capture()
         }
 
         // if ESC is pressed, then force thread to end
-        if (cv::waitKey(20) == 27)
-        {
+        // if (cv::waitKey(20) == 27)
+        // {
 
-            int ret = pthread_cancel(UpdThread);
-            int status;
+        //     int ret = pthread_cancel(UpdThread);
+        //     int status;
 
-            if (ret == 0)
-            {
-                // auto END
-                ret = pthread_join(UpdThread, (void **)&status);
-                if (ret == 0)
-                {
-                    // AUTO END = STATUS= -1
-                    cout << "Capture End Successfully." << endl;
-                    pthread_mutex_destroy(&frameLocker);
-                    currentFrame.release();
-                }
-                else
-                {
-                    cout << "Thread End Error!" << ret << endl;
-                    pthread_mutex_destroy(&frameLocker);
-                    currentFrame.release();
-                }
-                break;
-            }
-        }
+        //     if (ret == 0)
+        //     {
+        //         // auto END
+        //         ret = pthread_join(UpdThread, (void **)&status);
+        //         if (ret == 0)
+        //         {
+        //             // AUTO END = STATUS= -1
+        //             cout << "Capture End Successfully." << endl;
+        //             pthread_mutex_destroy(&frameLocker);
+        //             currentFrame.release();
+        //         }
+        //         else
+        //         {
+        //             cout << "Thread End Error!" << ret << endl;
+        //             pthread_mutex_destroy(&frameLocker);
+        //             currentFrame.release();
+        //         }
+        //         break;
+        //     }
+        // }
     }
 }
 
@@ -362,6 +362,8 @@ void convert_frames2gray(queue<cv::Mat> &BGR_QUEUE)
         }
 
         cv::Mat original = BGR_queue.front();
+        string img_name =orifile_path + getCID() + ".jpg";
+        cv::imwrite(img_name, original);
         cv::Mat temp;
         BGR_queue.pop();
 
@@ -750,7 +752,7 @@ int main(int, char **)
     Read_Logger_cfg();
     
     // key GEN
-    key_generation();
+    //key_generation();
 
     // Init Client
     // if (!test_initClient())
@@ -770,7 +772,7 @@ int main(int, char **)
     
     open_camera();
     lamping_time();
-    bool YUV_switch = true;
+    bool YUV_switch = false;
     while (true)
     {
         if (init() == -1)

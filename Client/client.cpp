@@ -87,7 +87,7 @@ void generate_AES(string pass){
 
 unsigned char* encrypt_data(char* secret, char* data){
 	unsigned char ciphertext[514];
-	int ciphertext_len = aes_encrypt(data, strlen(data), key, iv, ciphertext);
+	int ciphertext_len = aes_encrypt((unsigned char*)data, strlen(data), key, iv, ciphertext);
 
 	return ciphertext;
 }
