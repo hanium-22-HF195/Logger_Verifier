@@ -37,6 +37,7 @@ public:
 	void select_database(char* order, string &CID, string &HASH, string &SIGNED_HASH);
 	void insert_video_data(char* CID, char* Hash, char* Signed_Hash);
 	string insert_pk_database(string key_ID, string key_value);
+	void insert_public_keys_table(string LID, string pub_key);
 	void insert_aes_key(string generated_date, string key);
 	string get_latest_key_ID();
 	MYSQL* mysql_connection_setup(struct db_user sql_user);

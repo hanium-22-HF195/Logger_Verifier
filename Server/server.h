@@ -9,10 +9,13 @@
 #include <mysql.h>
 #include <openssl/evp.h>
 
+#include <vector>
+
 using namespace std;
 #define ThisID Server
 
-#include "server_cfg.h"
+// #include "server_cfg.h"
+#include "util.h"
 #include "../command_parser/command_define_list.h"
 
 #define HANDLE void*

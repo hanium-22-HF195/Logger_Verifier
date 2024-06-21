@@ -5,8 +5,11 @@
 
 #pragma comment(lib, "jsoncpp.lib")
 
-#ifdef THIS_IS_SERVER
-//RPI's IP that working as SERVER
+#include "util.h"
+
+using namespace std;
+
+
 int SERVER_PORT;
 char* storage_dir;
 
@@ -28,21 +31,29 @@ string password;
 int num_of_share;
 int key_threshold;
 char *salt;
+string sStorage_dir;
 
-/*
+
 void Read_server_cfg(){
 	ifstream json_dir("../Sys_cfg.json");
 	Json::CharReaderBuilder builder;
 	builder["collectComments"] = false;
-	Json::Value value;
-
+	
+    Json::Value value;
 	JSONCPP_STRING errs;
 	bool ok = parseFromStream(builder, json_dir, &value, &errs);
+
+
+    cout << "test cfg "   << endl;
+
 
 	if(ok == true){
 
 		SERVER_PORT     = value["Server"]["Server Port"].asInt();
         storage_dir     = const_cast<char*>(value["Server"]["storage dir"].asString().c_str());
+
+        sStorage_dir = value["Server"]["storage dir"].asString();
+
 
         Hash_size       = value["Server"]["Hash size"].asInt();
         Signed_Hash_size= value["Server"]["Signed hash size"].asInt();
@@ -62,5 +73,3 @@ void Read_server_cfg(){
         salt            = const_cast<char*>(value["Server"]["Salt"].asString().c_str());
 	}
 }
-*/
-#endif

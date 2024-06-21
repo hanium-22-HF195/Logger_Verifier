@@ -16,7 +16,6 @@
 #include <thread>
 #define CMD_BACKGROUND 1
 #define THIS_IS_SERVER
-
 #include <ctime>
 #include <cstdlib>
 
@@ -26,6 +25,8 @@
 #include "../c-sss/src/shamir.c"
 #include "../c-sss/src/strtok.c"
 #include "../DB/bout_database.h"
+
+#include "util.h"
 
 using namespace std;
 

@@ -14,6 +14,9 @@ using namespace std;
 #include "bout_database.h"
 #include "Database_cfg.cpp"
 
+
+
+
 void mkdir_func(string str){
 	if(mkdir(str.c_str(), 0777) == -1 && errno != EEXIST){
 		fprintf(stderr, strerror(errno));
@@ -26,7 +29,7 @@ void mkdir_func(string str){
 // ThisID 값 전달
 bout_database::bout_database(int typeID){
 	Read_DB_cfg();
-	unverified_table = "data_table";
+	unverified_table = "Video_data_table";
 	verified_table = "verified_frame";
 	if(typeID == 0x12)mkdir_func(image_dir);
 
@@ -80,25 +83,101 @@ void bout_database::select_database(char* order, string &CID, string &HASH, stri
 		SIGNED_HASH = row[2];
 	}
 	mysql_free_result(res);
-} //* CID, HASH, SIGNED_HASH를 반환함
+} //* CID, HASH, SIGNED_HASH를 반환함*//
 
+
+void bout_database::insert_video_data(char* CID, char* Hash, char* Signed_Hash){
+	string lid_value = "L-01";
+	//string sorder = "INSERT INTO " + unverified_table + "(CID, DID, hash, signed_hash)  values('" + CID + "', '" + DID  + "', '" +  Hash + "', '" + Signed_Hash + "');"; //table 형식에 맞춰서 문자열 만들어서 넣어주기
+	
+	char query[2048];
+
+	sprintf(query,"INSERT INTO %s (CID, LID, hash, signed_hash) values ('%s', '%s', '%s', '%s')", unverified_table.c_str(), CID, lid_value.c_str(), Hash, Signed_Hash);
+	
+	cout << query << endl;
+	char *order = const_cast<char*>(query);
+	MYSQL_RES *res = mysql_perform_query(conn, order);
+	if(res ==NULL){
+		cerr << mysql_error(conn) << endl;
+	}
+	mysql_free_result(res);
+}
+//** table name이 고정된 상태. command function 내에서 자체적으로 쿼리 작성 후 수행해도 상관없을듯 함*//
+
+/*
 void bout_database::insert_video_data(char* CID, char* Hash, char* Signed_Hash){
 	string sorder = "INSERT INTO " + unverified_table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "');";
 	cout << sorder << endl;
-	char *order = const_cast<char*>(sorder.c_str());
-	MYSQL_RES *res = mysql_perform_query(conn, order);
-	mysql_free_result(res);
-} //** table name이 고정된 상태. command function 내에서 자체적으로 쿼리 작성 후 수행해도 상관없을듯 함
+}
+*/ //** table name이 고정된 상태. command function 내에서 자체적으로 쿼리 작성 후 수행해도 상관없을듯 함*//
 
 string bout_database::insert_pk_database(string key_ID, string key_value){
 	// LID reset query : 'ALTER TABLE Loggers AUTO_INCREMENT = 0;'
-	string sorder = "INSERT INTO Loggers values(0, '" + key_value + "', '" + key_ID + "');";
-	char *order = const_cast<char*>(sorder.c_str());
-	MYSQL_RES *res = mysql_perform_query(conn, order);
-	mysql_free_result(res);
+	//string sorder = "INSERT INTO Loggers (LID, pub_key) values(0, '" + key_value + "', '" + key_ID + "');";
+	//string sorder = "INSERT INTO Loggers (DID, pub_key) values( '" +did_value  + "', '" + key_value + "');";
+
+	string lid_value = "L-01";
+
+	// 이 부분에  lid_value의 변수에 있는 값이 Loggers 테이블에 LID가 있는지 검색
+	char select_query[2028];
+	sprintf(select_query,"SELECT COUNT(*) FROM Loggers WHERE LID = '%s'",lid_value.c_str());
+	cout << select_query << endl;
+	char *select_order = const_cast<char*>(select_query);
+	MYSQL_RES *select_res = mysql_perform_query(conn, select_order);
+	if(select_res ==NULL){
+		cerr << mysql_error(conn) << endl;
+	}
+	
+	MYSQL_ROW checkRow;
+	int lidExists = 0;
+
+	if ((checkRow = mysql_fetch_row(select_res)) != NULL) {
+		lidExists = atoi(checkRow[0]);  // 결과가 0보다 크면 LID가 존재함
+	}
+	mysql_free_result(select_res);
+	cout << "lidExists : " <<lidExists << endl;
+
+
+	if (lidExists == 0) { //Loggers 테이블에 LID가 새로운 값이 들어오는 경우
+
+		char query[2048];
+
+		sprintf(query,"INSERT INTO Loggers (LID, pub_key) values( '%s', '%s')", lid_value.c_str(), key_value.c_str());
+		cout << query << endl;
+
+		char *order = const_cast<char*>(query);
+		MYSQL_RES *res = mysql_perform_query(conn, order);
+		if(res ==NULL){
+			cerr << mysql_error(conn) << endl;
+		}
+		mysql_free_result(res);
+
+		insert_public_keys_table(lid_value, key_value);
+	}
+	else if (lidExists == 1) { //Loggers 테이블에 LID가 현재 같은 값이 있는 경우
+
+		string table_Loggers = "Loggers";
+		string set_key_value = "pub_key = '" + key_value +"'";
+		string lid_where = "LID = '" + lid_value + "'";
+		update_database(set_key_value, table_Loggers, lid_where);
+
+		insert_public_keys_table(lid_value, key_value);
+	}
+	else {
+		cout << "lidExists can only have zero or one" << endl;
+	}
+	
+	
+
+
+
+
+
 
 	string LID;
-	sorder = "select max(LID) from Loggers;";
+	//sorder = "select max(LID) from Loggers;";
+	string sorder;
+	sorder = "select max(LID) from Loggers; ";
 	char *xorder = const_cast<char*>(sorder.c_str());
 	MYSQL_RES *res2 = mysql_perform_query(conn, xorder);
 
@@ -110,16 +189,39 @@ string bout_database::insert_pk_database(string key_ID, string key_value){
 	return LID;
 }
 
-void bout_database::update_database(string set, string table, string where = ""){
-	string sorder = "update " + table + 
-					" set " + set + 
-					" where " + where + ";";
-	char *order = const_cast<char*>(sorder.c_str());
+void bout_database::insert_public_keys_table(string LID, string pub_key){
 
-	cout << "update query : " << sorder << endl;
-	MYSQL_RES *res = mysql_perform_query(conn, order);
+    char query[2048];
+    sprintf(query, "INSERT INTO Public_keys (LID, pub_key) VALUES ('%s', '%s')", LID.c_str(), pub_key.c_str());
+    cout << "public_keys query : " << query << endl; 
+
+    char *order = const_cast<char*>(query);
+    MYSQL_RES *res = mysql_perform_query(conn, order);
+    if (res == NULL) {
+        cerr << mysql_error(conn) << endl;
+    }
+    mysql_free_result(res); 
+
+}
+
+void bout_database::update_database(string set, string table, string where = ""){
+
+	char query[2048];
+	sprintf(query,"update %s set %s where %s;",table.c_str(),set.c_str(),where.c_str());
+
+	//string sorder = "update " + table + 
+	//				" set " + set + 
+	//				" where " + where + ";";
+
+	char *order = const_cast<char*>(query);
+	cout << "update query : " << order << endl;
 	cout << endl << "---------------------------------------------------" << endl;
+	MYSQL_RES *res = mysql_perform_query(conn, order);
+	if(res ==NULL){
+		cerr << mysql_error(conn) << endl;
+	}
 	mysql_free_result(res);
+
 }
 
 string bout_database::get_latest_key_ID(){

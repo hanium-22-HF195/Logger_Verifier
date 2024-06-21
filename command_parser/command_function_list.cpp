@@ -5,12 +5,13 @@
 #include <map>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <../Server/util.h>
 
 #define Hash_size_D 64
 #define Signed_Hash_size_D 350
 #define CID_size_D 23
 
-//#define SV
+#define SV
 
 using namespace std;
 void mkdir_func(string str);
@@ -26,7 +27,10 @@ void make_res_Packet(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dat
 	for_res_packet.dataSize = dataSize;
 }
 
-string s_dir("/home/test/images");
+//string s_dir("/home/cloud/images");
+// Modified by yhkang
+string s_dir = sStorage_dir;
+
 
 /*
  dataType : 0xa0 = char
@@ -134,13 +138,20 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 	strcpy(CID, (char*)recv_buf);
 
 	string frame_dir((const char*)recv_buf);
-	frame_dir = s_dir + "/" + frame_dir; 
+
+	cout << "F storage dir : " << sStorage_dir.c_str() << endl;
+
+	frame_dir = sStorage_dir + "/" + frame_dir; 
+
+
+	//frame_dir = s_dir(storage_dir) + "/" + frame_dir; 
+	
 	const char* file_name = frame_dir.c_str();
 
 	file = fopen(file_name, "wb");
 
 	if (file == NULL)
-		cout << "file creation failed " << endl;
+		cout << " [command_parser.cpp/video_data_send] file creation failed " << file_name << endl;
 
 	memset(recv_buf, 0, msg->dataSize);
 	recv_binary(port, Hash_size_D, (void*)recv_buf);
@@ -156,7 +167,8 @@ int video_data_send(HEADERPACKET* msg, IO_PORT *port){
 
 	make_res_Packet(Logger, VIDEO_DATA_RES, 0, 0);
 
-	#ifdef THIS_IS_SERVER
+	#ifdef SV
+	cout << "Insert a metadata of video frame received" << endl;
 	insert_video_data(CID, Hash, Signed_Hash);
 	#endif
 

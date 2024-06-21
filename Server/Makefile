@@ -8,7 +8,7 @@ CP_DIR			= ./
 
 ## 사용자 소스
 TARGET			= serverTest
-SRCS			= ../command_parser/command_parser.cpp ../DB/bout_database.cpp server.cpp main_func.cpp
+SRCS			= ../command_parser/command_parser.cpp ../DB/bout_database.cpp server.cpp main_func.cpp util.cpp
 #---------------------------------------------------------------------
 ## 소스레벨의 라이브러리
 
@@ -21,6 +21,7 @@ LIVDIRS			+= -L /usr/local/opt/openssl@3/lib
 OBJS			= $(SRCS:.cpp=.o)
 
 CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -L/usr/local/opt/openssl/lib 
+#CFLAGS			= $(INCLUDEDIRS) -g -o -W -Wall -I/usr/include/mysql -L/usr/lib64/mysql -L/usr/local/opt/openssl/lib 
 LDFLAGS			= $(LIVDIRS)
 LIBS			= -lpthread -lmysqlclient -ljsoncpp -lssl -lcrypto 
 
